@@ -1,0 +1,150 @@
+import Cinnamon from "../assets/Cinnamon.jpg";
+import Cloves from "../assets/Cloves.jpg";
+import BlackPepper from "../assets/BlackPepper.jpg";
+import Bayleaves from "../assets/Bayleaves.jpg";
+import Coriander from "../assets/Coriander.jpg";
+
+const Spices = [
+  {
+    id: 1,
+    img: Cinnamon,
+    name: "Cinnamon",
+    price: 0.9,
+    type: Cinnamon,
+    variants: [
+      { id: 1, size: 100 },
+      { id: 2, size: 250 },
+      { id: 3, size: 500 },
+    ],
+    gst: 5,
+    Availability: "Instock",
+    ContainerType: "Pouch",
+    DietType: "Veg",
+    Organic: "Yes",
+    AddPreservatives: "Yes",
+    Ingredients: "Cinnamon",
+    ImportantNote: "Super",
+    MaximumShelfLife: "6 Month",
+    FormFactor: "Powder",
+    ManufactureDate: "27Aug2025",
+    ExpiryDate: "27Dec2025",
+    rating: 4.5,
+    description:
+      "Cinnamon is cherished for its warm, sweet, and woody aroma that instantly adds comfort to any recipe. Whether sprinkled over desserts, stirred into spiced teas, or blended into rich curries, it brings a natural sweetness and depth of flavor that balances both sweet and savory dishes.",
+    benefits:
+      "Rich in antioxidants Protects cells and slows aging,Supports heart health May lower bad cholesterol and improve circulation",
+  },
+  {
+    id: 2,
+    img: Bayleaves,
+    name: "Bayleaves",
+    price: 0.8,
+    gst: 8,
+    variants: [
+      { id: 1, size: 100 },
+      { id: 2, size: 250 },
+      { id: 3, size: 500 },
+    ],
+    Availability: "Instock",
+    ContainerType: "Pouch",
+    DietType: "Veg",
+    Organic: "Yes",
+    AddPreservatives: "Yes",
+    Ingredients: "Bayleaves",
+    ImportantNote: "Super",
+    MaximumShelfLife: "6 Month",
+    FormFactor: "Powder",
+    ManufactureDate: "27Aug2025",
+    ExpiryDate: "27Dec2025",
+    rating: 5,
+    description:
+      "Bay leaves have a subtle, earthy fragrance with hints of herbal sweetness that gently infuse into dishes as they simmer. Commonly used in soups, curries, rice, and stews, they add depth and complexity without overpowering the recipe. A single leaf can transform everyday cooking into something aromatic and flavorful.",
+    benefits:
+      "Supports digestion Helps break down food and reduce bloating Controls blood sugar May help manage glucose levels",
+  },
+  {
+    id: 3,
+    img: BlackPepper,
+    name: "BlackPepper",
+    price: 5,
+    gst: 7,
+    variants: [
+      { id: 1, size: 100 },
+      { id: 2, size: 250 },
+      { id: 3, size: 500 },
+    ],
+    rating: 4.8,
+    Availability: "Out of Stock",
+    ContainerType: "Pouch",
+    DietType: "Veg",
+    Organic: "Yes",
+    AddPreservatives: "Yes",
+    Ingredients: "BlackPepper",
+    ImportantNote: "Super",
+    MaximumShelfLife: "6 Month",
+    FormFactor: "Powder",
+    ManufactureDate: "27Aug2025",
+    ExpiryDate: "27Dec2025",
+    description:
+      "Black pepper is a pungent spice made from dried peppercorns.Often called the “King of Spices,” black pepper is bold, sharp, and full of character. Its fiery bite enhances everyday cooking, from soups and curries to snacks and marinades, making it one of the most versatile and indispensable spices in every kitchen.",
+    benefits:
+      "Rich in antioxidants Contains piperine, which helps fight free radicals and protect cells from damage2 ",
+  },
+  {
+    id: 4,
+    img: Cloves,
+    name: "Cloves",
+    price: 4,
+    gst: 6,
+    variants: [
+      { id: 1, size: 100 },
+      { id: 2, size: 250 },
+      { id: 3, size: 500 },
+    ],
+    rating: 4.8,
+    Availability: "Instock",
+    ContainerType: "Pouch",
+    DietType: "Veg",
+    Organic: "Yes",
+    AddPreservatives: "Yes",
+    Ingredients: "Cloves",
+    ImportantNote: "Super",
+    MaximumShelfLife: "6 Month",
+    FormFactor: "Powder",
+    ManufactureDate: "27Aug2025",
+    ExpiryDate: "27Dec2025",
+    description:
+      "Cloves are prized for their intense aroma and warm, sweet-spicy flavor that lingers beautifully. Used in biryanis, teas, and festive gravies, they infuse dishes with richness and depth, making them a favorite in both savory and sweet preparations.",
+    benefits:
+      "Fights bacteria Acts as a natural antimicrobial,Supports oral health Relieves toothache and freshens breath",
+  },
+  {
+    id: 5,
+    img: Coriander,
+    name: "Coriander",
+    price: 4.5,
+    gst: 7.5,
+    variants: [
+      { id: 1, size: 100 },
+      { id: 2, size: 250 },
+      { id: 3, size: 500 },
+    ],
+    rating: 4.9,
+    Availability: "Instock",
+    ContainerType: "Pouch",
+    DietType: "Veg",
+    Organic: "Yes",
+    AddPreservatives: "Yes",
+    Ingredients: "Coriander",
+    ImportantNote: "Super",
+    MaximumShelfLife: "6 Month",
+    FormFactor: "Powder",
+    ManufactureDate: "27Aug2025",
+    ExpiryDate: "27Dec2025",
+    description:
+      "Coriander seeds have a citrusy, nutty flavor With its mild, earthy base and refreshing citrusy notes, coriander is a staple in Indian cooking and beyond. Perfect for curries, chutneys, and spice blends, it adds brightness and balance that elevate both traditional recipes and modern dishes alike.",
+    benefits:
+      "Lowers blood sugar Helps manage insulin levels,Rich in antioxidants Protects against cell damage",
+  },
+];
+export default Spices;
