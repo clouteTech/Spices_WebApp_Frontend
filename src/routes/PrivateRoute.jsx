@@ -7,7 +7,7 @@ const PrivateRoute = ({ children }) => {
   return isAuthenticated && role === "customer" ? (
     children
   ) : (
-    <Navigate to="/login" />
+    <Navigate to="/login" replace/>
   );
 };
 

@@ -1,57 +1,39 @@
 import React from "react";
 import { Routes, Route } from "react-router-dom";
-import AdminLogin from "../components/Admin/Login";
+import Login from "../components/Admin/Login";
 import Dashboard from "../components/Admin/Dashboard";
 import OrderManagement from "../components/Admin/OrderManagement";
-import ProductManagement from "../components/Admin/ProductManagement";
+import AddProduct from "../components/Admin/productManagement/AddProduct"
 import CompanyDetails from "../components/Admin/CompanyDetails";
 import PublicRoute from "./PublicRoute";
 import ProtectedRoute from "./ProtectedRoute";
+import AdminLayout from "../components/Admin/AdminLayout";
 
 const AdminRoutes = () => {
   return (
     <>
       <Routes>
         <Route
-          path="/admin-login"
+          path="login"
           element={
             <PublicRoute>
-              <AdminLogin />
+              <Login />
             </PublicRoute>
           }
         />
         <Route
-          path="/admin/dashboard"
+          path="/"
           element={
             <ProtectedRoute>
-              <Dashboard />
+              <AdminLayout />
             </ProtectedRoute>
           }
-        />
-        <Route
-          path="/admin/products"
-          element={
-            <ProtectedRoute>
-              <ProductManagement />
-            </ProtectedRoute>
-          }
-        />
-        <Route
-          path="/admin/order"
-          element={
-            <ProtectedRoute>
-              <OrderManagement />
-            </ProtectedRoute>
-          }
-        />
-        <Route
-          path="/admin/company"
-          element={
-            <ProtectedRoute>
-              <CompanyDetails />
-            </ProtectedRoute>
-          }
-        />
+        >
+          <Route path="dashboard" element={<Dashboard />} />
+          <Route path="AddProduct" element={<AddProduct />} />
+          <Route path="orders" element={<OrderManagement />} />
+          <Route path="company/:companyId" element={<CompanyDetails />} />
+        </Route>
       </Routes>
     </>
   );

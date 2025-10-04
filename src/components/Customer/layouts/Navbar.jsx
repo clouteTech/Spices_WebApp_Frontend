@@ -38,25 +38,25 @@ const Navbar = () => {
         <ListItem button component={Link} to="/">
           <ListItemIcon>
             <HomeOutlinedIcon sx={{ mr: 1 }} />
-            <ListItemText primary="Home"/>
+            <ListItemText primary="Home" />
           </ListItemIcon>
         </ListItem>
         <ListItem button component={Link} to="/products">
           <ListItemIcon>
             <Inventory2OutlinedIcon sx={{ mr: 1 }} />
-            <ListItemText primary="Products"/>
+            <ListItemText primary="Products" />
           </ListItemIcon>
         </ListItem>
         <ListItem button component={Link} to="/cart">
           <ListItemIcon>
             <ShoppingCartOutlinedIcon sx={{ mr: 1 }} />
-            <ListItemText primary="Cart"/>
+            <ListItemText primary="Cart" />
           </ListItemIcon>
         </ListItem>
         <ListItem button component={Link} to="/contact">
           <ListItemIcon>
             <PermContactCalendarOutlinedIcon sx={{ mr: 1 }} />
-            <ListItemText primary="Contact"/>
+            <ListItemText primary="Contact" />
           </ListItemIcon>
         </ListItem>
       </List>
@@ -127,7 +127,7 @@ const Navbar = () => {
                 <ShoppingCartOutlinedIcon />
               </Badge>
             </IconButton>
-            <IconButton component={Link} to="/account" color="inherit">
+            <IconButton component={Link} to="/profile" color="inherit">
               <AccountCircleIcon />
             </IconButton>
           </Box>
