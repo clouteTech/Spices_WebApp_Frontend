@@ -1,4 +1,4 @@
-import { TextField } from '@mui/material';
+import { TextField,Grid,Button } from '@mui/material';
 import React, { useState } from 'react'
 
 const AddProductForm = ({onSave,onCancel}) => {
@@ -64,7 +64,7 @@ const AddProductForm = ({onSave,onCancel}) => {
         <Grid item xs={6}>
           <TextField
             label="Size Type"
-            name="SizeType"
+            name="sizeType"
             value={form.sizeType}
             onChange={handleChange}
           />

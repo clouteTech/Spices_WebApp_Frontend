@@ -159,6 +159,8 @@ import StoreOutlinedIcon from "@mui/icons-material/StoreOutlined";
 import ShoppingBagOutlinedIcon from "@mui/icons-material/ShoppingBagOutlined";
 import ExpandMoreOutlinedIcon from "@mui/icons-material/ExpandMoreOutlined";
 import ExpandLessOutlinedIcon from "@mui/icons-material/ExpandLessOutlined";
+import StraightenRoundedIcon from "@mui/icons-material/StraightenRounded";
+import InventoryRoundedIcon from "@mui/icons-material/InventoryRounded";
 import MenuIcon from "@mui/icons-material/Menu";
 import ChevronLeftIcon from "@mui/icons-material/ChevronLeft";
 
@@ -233,7 +235,9 @@ const Sidebar = () => {
             transition: "width 0.3s",
             overflowX: "hidden",
             boxSizing: "border-box",
-            backgroundColor: "#ffffff",
+            backgroundImage: "linear-gradient(180deg, #462e46ff 0%, #b07bac 100%)",
+            boxShadow:"2px 0 10px rgba(184,45,45,0.1)",
+            color:"#fff"
           },
         }}
       >
@@ -280,7 +284,6 @@ const Sidebar = () => {
             </ListItemIcon>
             {open && <ListItemText primary="Company" />}
           </ListItemButton>
-          
 
           <ListItemButton
             component={Link}
@@ -325,9 +328,51 @@ const Sidebar = () => {
                     mr: open ? 0 : "auto",
                   }}
                 >
-                  <CategoryOutlinedIcon />
+                  <InventoryRoundedIcon />
                 </ListItemIcon>
                 {open && <ListItemText primary="Add Product" />}
+              </ListItemButton>
+            </List>
+            <List component="div" disablePadding>
+              <ListItemButton
+                component={Link}
+                to="/admin/AddProduct"
+                sx={{
+                  pl: open ? 6 : 2,
+                  justifyContent: open ? "initial" : "center",
+                }}
+              >
+                <ListItemIcon
+                  sx={{
+                    minWidth: 32,
+                    justifyContent: "center",
+                    mr: open ? 0 : "auto",
+                  }}
+                >
+                  <CategoryOutlinedIcon />
+                </ListItemIcon>
+                {open && <ListItemText primary="Category Master" />}
+              </ListItemButton>
+            </List>
+            <List component="div" disablePadding>
+              <ListItemButton
+                component={Link}
+                to="/admin/AddProduct"
+                sx={{
+                  pl: open ? 6 : 2,
+                  justifyContent: open ? "initial" : "center",
+                }}
+              >
+                <ListItemIcon
+                  sx={{
+                    minWidth: 32,
+                    justifyContent: "center",
+                    mr: open ? 0 : "auto",
+                  }}
+                >
+                  <StraightenRoundedIcon />
+                </ListItemIcon>
+                {open && <ListItemText primary="Size Master" />}
               </ListItemButton>
             </List>
           </Collapse>

@@ -24,9 +24,9 @@ const AdminRoutes = () => {
         <Route
           path="/"
           element={
-            <ProtectedRoute>
+            <PublicRoute>
               <AdminLayout />
-            </ProtectedRoute>
+            </PublicRoute>
           }
         >
           <Route path="dashboard" element={<Dashboard />} />
