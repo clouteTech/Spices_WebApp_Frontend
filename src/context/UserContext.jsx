@@ -3,7 +3,7 @@ import { createContext, useContext, useEffect, useState } from "react";
 const UserContext = createContext();
 
 export const UserProvider = ({ children }) => {
-  const [role, setRole] = useState(null);
+  const [role, setRole] = useState([]);
   const [isAuthenticated, setIsAuthenticated] = useState(false);
 
   useEffect(()=>{

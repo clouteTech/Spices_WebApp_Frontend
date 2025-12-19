@@ -1,436 +1,531 @@
 // import React, { useState } from "react";
 // import {
+//   Box,
 //   Drawer,
 //   List,
-//   ListItem,
-//   ListItemText,
+//   ListItemButton,
 //   ListItemIcon,
+//   ListItemText,
 //   Collapse,
-//   Toolbar,Typography
+//   Toolbar,
+//   IconButton,
+//   Typography,
 // } from "@mui/material";
-// import { NavLink } from "react-router-dom";
-// import DashboardOutlinedIcon from "@mui/icons-material/DashboardOutlined";
-// import Inventory2OutlinedIcon from "@mui/icons-material/Inventory2Outlined";
-// import ShoppingCartOutlinedIcon from "@mui/icons-material/ShoppingCartOutlined";
-// import CategoryOutlinedIcon from "@mui/icons-material/CategoryOutlined";
-// import StoreOutlinedIcon from "@mui/icons-material/StoreOutlined";
-// import LoginOutlinedIcon from "@mui/icons-material/LoginOutlined";
-// import ShoppingBagOutlinedIcon from "@mui/icons-material/ShoppingBagOutlined";
-// import ExpandMoreOutlinedIcon from "@mui/icons-material/ExpandMoreOutlined";
-// import ExpandLessOutlinedIcon from "@mui/icons-material/ExpandLessOutlined";
+// import {
+//   DashboardOutlined,
+//   Inventory2Outlined,
+//   ShoppingCartOutlined,
+//   CategoryOutlined,
+//   StoreOutlined,
+//   ShoppingBagOutlined,
+//   ExpandMoreOutlined,
+//   ExpandLessOutlined,
+//   StraightenRounded,
+//   InventoryRounded,
+//   Menu,
+//   ChevronLeft,
+// } from "@mui/icons-material";
+// import BackpackOutlinedIcon from "@mui/icons-material/BackpackOutlined";
+// import LocalOfferOutlinedIcon from "@mui/icons-material/LocalOfferOutlined";
+// import { Link } from "react-router-dom";
+// import logo1 from "../../assets/logo1.png";
 
-// const Sidebar = () => {
+// export const drawerWidth = 240;
+// export const collapsedWidth = 60;
 
-//   const drawerWidth = 240;
-//   // const [open, setOpen] = useState(false);
+// const Sidebar = ({ open, setOpen }) => {
 //   const [openProduct, setOpenProduct] = useState(false);
 //   const [openOrder, setOpenOrder] = useState(false);
 
+//   const toggleDrawer = () => setOpen((prev) => !prev);
+
+//   const menuItemStyles = {
+//     display: "flex",
+//     justifyContent: open ? "initial" : "center",
+//     px: 2,
+//   };
+
+//   const iconStyles = {
+//     minWidth: 32,
+//     justifyContent: "center",
+//     mr: open ? 0 : "auto",
+//   };
+
 //   return (
 //     <Drawer
-//       variant="persistent"
-//       anchor="left"
+//       variant="permanent"
 //       open={open}
 //       sx={{
-//         width: open ? drawerWidth : 60,
+//         width: open ? drawerWidth : collapsedWidth,
 //         flexShrink: 0,
 //         "& .MuiDrawer-paper": {
-//           width: open ? drawerWidth : 60,
+//           width: open ? drawerWidth : collapsedWidth,
 //           transition: "width 0.3s",
 //           overflowX: "hidden",
 //           boxSizing: "border-box",
-//           backgroundColor: "#ffffff",
+//           backgroundColor: "#fcfcfcff",
 //         },
 //       }}
 //     >
 //       <Toolbar
 //         sx={{
-//           backgroundColor: "#0c243bff",
-//           color: "#fff",
-//           justifyContent: "center",
+//           display: "flex",
+//           justifyContent: open ? "space-between" : "center",
+//           alignItems: "center",
+//           px: 1,
 //         }}
 //       >
-//         <Typography variant="h6" noWrap>
-//           Admin Panel
-//         </Typography>
-//       </Toolbar>
-//       <List>
-//         <ListItem
-//           button
-//           component={NavLink}
-//           to="/admin/dashboard"
-//           style={{ color: "black", textDecoration: "none" }}
-//         >
-//           <ListItemIcon sx={{ minWidth: 32 }}>
-//             <DashboardOutlinedIcon />
-//           </ListItemIcon>
-//           <ListItemText primary="DashBoard" />
-//         </ListItem>
-//         <ListItem
-//           button
-//           component={NavLink}
-//           to="/admin/company"
-//           style={{ color: "black", textDecoration: "none" }}
-//         >
-//           <ListItemIcon sx={{ minWidth: 32 }}>
-//             <StoreOutlinedIcon />
-//           </ListItemIcon>
-//           <ListItemText primary="Company" />
-//         </ListItem>
-//         <ListItem button onClick={() => setOpenProduct(!openProduct)}>
-//           <ListItemIcon sx={{ minWidth: 32 }}>
-//             <Inventory2OutlinedIcon />
-//           </ListItemIcon>
-//           <ListItemText primary="Product Management" />
-//           {openProduct ? (
-//             <ExpandLessOutlinedIcon />
-//           ) : (
-//             <ExpandMoreOutlinedIcon />
+//         <Box sx={{ display: "flex", alignItems: "center" }}>
+//           {open && (
+//             <>
+//               <Box
+//                 component="img"
+//                 src={logo1}
+//                 alt="logo"
+//                 sx={{ height: 40, width: "auto" }}
+//               />
+//               <Typography variant="h6" sx={{ ml: 1, fontWeight: 600 }}>
+//                 Admin
+//               </Typography>
+//             </>
 //           )}
-//         </ListItem>
-//         <Collapse in={openProduct} timeout="auto" unmountOnExit>
-//           <List component="div" disablePadding>
-//             <ListItem
-//               button
-//               sx={{ pl: 4 }}
-//               component={NavLink}
-//               to="/admin/products/add"
-//               style={{ color: "black", textDecoration: "none" }}
-//             >
-//               <ListItemIcon sx={{ minWidth: 32 }}>
-//                 <CategoryOutlinedIcon />
-//               </ListItemIcon>
-//               <ListItemText primary="Add Product" />
-//             </ListItem>
-//           </List>
-//         </Collapse>
-//         <ListItem button onClick={() => setOpenOrder(!openOrder)}>
-//           <ListItemIcon sx={{ minWidth: 32 }}>
-//             <ShoppingCartOutlinedIcon />
-//           </ListItemIcon>
-//           <ListItemText primary="Order Management" />
-//           {openOrder ? <ExpandLessOutlinedIcon /> : <ExpandMoreOutlinedIcon />}
-//         </ListItem>
-//         <Collapse in={openOrder} timeout="auto" unmountOnExit>
-//           <List component="div" disablePadding>
-//             <ListItem
-//               button
-//               sx={{ pl: 4 }}
-//               component={NavLink}
-//               to="/admin/order/orders"
-//               style={{ color: "black", textDecoration: "none" }}
-//             >
-//               <ListItemIcon sx={{ minWidth: 32 }}>
-//                 <ShoppingBagOutlinedIcon />
-//               </ListItemIcon>
-//               <ListItemText primary="Order" />
-//             </ListItem>
-//           </List>
-//         </Collapse>
-//       </List>
+//         </Box>
+//         <IconButton onClick={toggleDrawer}>
+//           {open ? <ChevronLeft /> : <Menu />}
+//         </IconButton>
+//       </Toolbar>
+
+//       <Box sx={{ overflow: "auto", flexGrow: 1 }}>
+//         <List>
+//           {/* Dashboard */}
+//           <ListItemButton
+//             component={Link}
+//             to="/admin/Dashboard"
+//             sx={menuItemStyles}
+//           >
+//             <ListItemIcon sx={iconStyles}>
+//               <DashboardOutlined />
+//             </ListItemIcon>
+//             {open && <ListItemText primary="Dashboard" />}
+//           </ListItemButton>
+
+//           {/* Company */}
+//           <ListItemButton
+//             component={Link}
+//             to="/admin/company/1"
+//             sx={menuItemStyles}
+//           >
+//             <ListItemIcon sx={iconStyles}>
+//               <StoreOutlined />
+//             </ListItemIcon>
+//             {open && <ListItemText primary="Company Details" />}
+//           </ListItemButton>
+
+//           {/* Product Management */}
+//           <ListItemButton
+//             onClick={() => setOpenProduct(!openProduct)}
+//             sx={menuItemStyles}
+//           >
+//             <ListItemIcon sx={iconStyles}>
+//               <Inventory2Outlined />
+//             </ListItemIcon>
+//             {open && <ListItemText primary="Product Management" />}
+//             {open &&
+//               (openProduct ? <ExpandLessOutlined /> : <ExpandMoreOutlined />)}
+//           </ListItemButton>
+
+//           <Collapse in={openProduct} timeout="auto" unmountOnExit>
+//             <List disablePadding>
+//               <ListItemButton
+//                 component={Link}
+//                 to="/admin/SizeMaster"
+//                 sx={{ pl: open ? 6 : 2 }}
+//               >
+//                 <ListItemIcon sx={iconStyles}>
+//                   <StraightenRounded />
+//                 </ListItemIcon>
+//                 {open && <ListItemText primary="Size Master" />}
+//               </ListItemButton>
+
+//               <ListItemButton
+//                 component={Link}
+//                 to="/admin/CategoryMaster"
+//                 sx={{ pl: open ? 6 : 2 }}
+//               >
+//                 <ListItemIcon sx={iconStyles}>
+//                   <InventoryRounded />
+//                 </ListItemIcon>
+//                 {open && <ListItemText primary="Product Category" />}
+//               </ListItemButton>
+
+//               <ListItemButton
+//                 component={Link}
+//                 to="/admin/ProductsMaster"
+//                 sx={{ pl: open ? 6 : 2 }}
+//               >
+//                 <ListItemIcon sx={iconStyles}>
+//                   <CategoryOutlined />
+//                 </ListItemIcon>
+//                 {open && <ListItemText primary="Product Master" />}
+//               </ListItemButton>
+
+//               <ListItemButton
+//                 component={Link}
+//                 to="/admin/PackageType"
+//                 sx={{ pl: open ? 6 : 2 }}
+//               >
+//                 <ListItemIcon sx={iconStyles}>
+//                   <BackpackOutlinedIcon />
+//                 </ListItemIcon>
+//                 {open && <ListItemText primary="Package Type" />}
+//               </ListItemButton>
+
+//               <ListItemButton
+//                 component={Link}
+//                 to="/admin/ProductPrice"
+//                 sx={{ pl: open ? 6 : 2 }}
+//               >
+//                 <ListItemIcon sx={iconStyles}>
+//                   <LocalOfferOutlinedIcon />
+//                 </ListItemIcon>
+//                 {open && <ListItemText primary="Product Price" />}
+//               </ListItemButton>
+//             </List>
+//           </Collapse>
+
+//           <ListItemButton
+//             onClick={() => setOpenOrder(!openOrder)}
+//             sx={menuItemStyles}
+//           >
+//             <ListItemIcon sx={iconStyles}>
+//               <ShoppingCartOutlined />
+//             </ListItemIcon>
+//             {open && <ListItemText primary="Stock Management" />}
+//             {open &&
+//               (openOrder ? <ExpandLessOutlined /> : <ExpandMoreOutlined />)}
+//           </ListItemButton>
+
+//           <Collapse in={openOrder} timeout="auto" unmountOnExit>
+//             <List disablePadding>
+//               <ListItemButton
+//                 component={Link}
+//                 to="/admin/order/orders"
+//                 sx={{ pl: open ? 6 : 2 }}
+//               >
+//                 <ListItemIcon sx={iconStyles}>
+//                   <ShoppingBagOutlined />
+//                 </ListItemIcon>
+//                 {open && <ListItemText primary="Stock" />}
+//               </ListItemButton>
+//             </List>
+//           </Collapse>
+
+//           {/* Order Management */}
+//           <ListItemButton
+//             onClick={() => setOpenOrder(!openOrder)}
+//             sx={menuItemStyles}
+//           >
+//             <ListItemIcon sx={iconStyles}>
+//               <ShoppingCartOutlined />
+//             </ListItemIcon>
+//             {open && <ListItemText primary="Order Management" />}
+//             {open &&
+//               (openOrder ? <ExpandLessOutlined /> : <ExpandMoreOutlined />)}
+//           </ListItemButton>
+
+//           <Collapse in={openOrder} timeout="auto" unmountOnExit>
+//             <List disablePadding>
+//               <ListItemButton
+//                 component={Link}
+//                 to="/admin/order/orders"
+//                 sx={{ pl: open ? 6 : 2 }}
+//               >
+//                 <ListItemIcon sx={iconStyles}>
+//                   <ShoppingBagOutlined />
+//                 </ListItemIcon>
+//                 {open && <ListItemText primary="Orders" />}
+//               </ListItemButton>
+//             </List>
+//           </Collapse>
+//         </List>
+//       </Box>
 //     </Drawer>
 //   );
 // };
 
 // export default Sidebar;
-
 import React, { useState } from "react";
 import {
   Box,
   Drawer,
   List,
-  ListItem,
+  ListItemButton,
   ListItemIcon,
   ListItemText,
   Collapse,
   Toolbar,
-  Typography,
   IconButton,
-  AppBar,
-  ListItemButton,
+  Typography,
 } from "@mui/material";
-import { Link, NavLink } from "react-router-dom";
-import { useParams } from "react-router-dom";
-import DashboardOutlinedIcon from "@mui/icons-material/DashboardOutlined";
-import Inventory2OutlinedIcon from "@mui/icons-material/Inventory2Outlined";
-import ShoppingCartOutlinedIcon from "@mui/icons-material/ShoppingCartOutlined";
-import CategoryOutlinedIcon from "@mui/icons-material/CategoryOutlined";
-import StoreOutlinedIcon from "@mui/icons-material/StoreOutlined";
-import ShoppingBagOutlinedIcon from "@mui/icons-material/ShoppingBagOutlined";
-import ExpandMoreOutlinedIcon from "@mui/icons-material/ExpandMoreOutlined";
-import ExpandLessOutlinedIcon from "@mui/icons-material/ExpandLessOutlined";
-import StraightenRoundedIcon from "@mui/icons-material/StraightenRounded";
-import InventoryRoundedIcon from "@mui/icons-material/InventoryRounded";
-import MenuIcon from "@mui/icons-material/Menu";
-import ChevronLeftIcon from "@mui/icons-material/ChevronLeft";
 
-const drawerWidth = 240;
+import {
+  DashboardOutlined,
+  Inventory2Outlined,
+  ShoppingCartOutlined,
+  CategoryOutlined,
+  StoreOutlined,
+  ShoppingBagOutlined,
+  ExpandMore,
+  ExpandLess,
+  Straighten,
+  Inventory,
+  ChevronLeft,
+} from "@mui/icons-material";
 
-const Sidebar = () => {
-  const [open, setOpen] = useState(false);
-  const { companyId } = useParams();
+import BackpackIcon from "@mui/icons-material/BackpackOutlined";
+import LocalOfferIcon from "@mui/icons-material/LocalOfferOutlined";
+import { Link } from "react-router-dom";
+import logo1 from "../../assets/logo1.png";
+
+export const drawerWidth = 300;
+export const collapsedWidth = 70;
+
+const Sidebar = ({ open, setOpen, mobileOpen, setMobileOpen }) => {
   const [openProduct, setOpenProduct] = useState(false);
+  const [openStock, setOpenStock] = useState(false);
   const [openOrder, setOpenOrder] = useState(false);
 
-  const toggleDrawer = () => setOpen(!open);
+  const menuItemStyle = {
+    py: 1,
+    px: 2,
+    my: 0.5,
+    borderRadius: 2,
+    minHeight: 44,
+    display: "flex",
+    alignItems: "center",
+    color: "#fff",
+    "&:hover": { backgroundColor: "#1e2f44" },
+  };
 
-  //   // // const menuItems = [
-  //   // //   {
-  //   // //     text: "Dashboard",
-  //   // //     icon: <DashboardOutlinedIcon />,
-  //   // //     path: "/admin/dashboard",
-  //   // //   },
-  //   // //   {
-  //   // //     text: "Company",
-  //   // //     icon: <StoreOutlinedIcon />,
-  //   // //     path: "/admin/company",
-  //   // //   },
-  //   // // ];
-
-  //   // // const productMenu = [
-  //   // //   {
-  //   // //     text: "Add Product",
-  //   // //     icon: <CategoryOutlinedIcon />,
-  //   // //     path: "/admin/products/add",
-  //   // //   },
-  //   // // ];
-
-  //   // const orderMenu = [
-  //   //   {
-  //   //     text: "Order",
-  //   //     icon: <ShoppingBagOutlinedIcon />,
-  //   //     path: "/admin/order/orders",
-  //   //   },
-  //   // ];
+  const iconStyle = { minWidth: 32, color: "#d1d5db", fontSize: 20 };
 
   return (
-    <Box sx={{ display: "flex" }}>
-      {/* AppBar */}
-      <AppBar
-        position="fixed"
-        sx={{
-          zIndex: (theme) => theme.zIndex.drawer + 1,
-          backgroundColor: "#7a537dff",
-        }}
-      >
-        <Toolbar sx={{ display: "flex", justifyContent: "space-between" }}>
-          <IconButton color="inherit" edge="start" onClick={toggleDrawer}>
-            {open ? <ChevronLeftIcon /> : <MenuIcon />}
+    // <Drawer
+    //   variant={mobileOpen ? "temporary" : "persistent"}
+    //   open={mobileOpen || open}
+    //   onClose={() => setMobileOpen(false)}
+    //   sx={{
+    //     "& .MuiDrawer-paper": {
+    //       width: open ? drawerWidth : collapsedWidth,
+    //       top: "84px",
+    //       height: "calc(100% - 84px)",
+    //       backgroundColor: "#2d4358",
+    //       color: "#fff",
+    //       transition: "width 0.3s",
+    //       overflowX: "hidden",
+
+    //       paddingTop: "20px",
+    //       paddingLeft: open ? "20px" : "10px",
+    //       paddingRight: open ? "20px" : "5px",
+    //     },
+    //   }}
+    // >
+    <Box
+      className="sidebar"
+      sx={{
+        width: open ? drawerWidth : collapsedWidth,
+        // position: "fixed",
+        // top: "84px",
+        // left: open ? "20px" : "-300px",
+        height: "calc(100vh - 84px)",
+        backgroundColor: "#3a4757ff",
+        borderRadius: "20px", // ★ THIS MAKES IT A CARD
+        boxShadow: "0 6px 20px rgba(0,0,0,0.2)", // ★ SHADOW LIKE SAKAI
+        overflowY: "auto",
+        overflowX: "hidden",
+        // transition: "0.3s",
+        paddingTop: "20px",
+        paddingLeft: open ? "20px" : "10px",
+        paddingRight: open ? "20px" : "5px",
+        zIndex: 1200,
+      }}
+    >
+      {/* HEADER */}
+      {/* <Toolbar sx={{ justifyContent: open ? "space-between" : "center" }}>
+        {/* <Box sx={{ display: "flex", alignItems: "center" }}>
+          {/* <img src={logo1} alt="logo" style={{ height: 40 }} />
+          {open && (
+            <Typography variant="h6" sx={{ ml: 1, fontWeight: 600 }}>
+              Admin
+            </Typography>
+          )} */}
+      {/* </Box> */}
+
+      {/* {open && (
+          <IconButton onClick={() => setOpen(false)} sx={{ color: "white" }}>
+            <ChevronLeft />
           </IconButton>
-          <Typography variant="h6" noWrap>
-            Admin Panel
+        )} */}
+      {/* </Toolbar> */}
+
+      {/* MENU */}
+      <List>
+        {open && (
+          <Typography
+            sx={{ px: 3, py: 1, fontSize: 14, opacity: 0.6, color: "#e5e7eb" }}
+          >
+            HOME
           </Typography>
-        </Toolbar>
-      </AppBar>
-      {/* Drawer */}
-      <Drawer
-        variant="permanent"
-        open={open}
-        sx={{
-          width: open ? drawerWidth : 60,
-          flexShrink: 0,
-          whiteSpace: "nowrap",
-          "& .MuiDrawer-paper": {
-            width: open ? drawerWidth : 60,
-            transition: "width 0.3s",
-            overflowX: "hidden",
-            boxSizing: "border-box",
-            backgroundImage: "linear-gradient(180deg, #462e46ff 0%, #b07bac 100%)",
-            boxShadow:"2px 0 10px rgba(184,45,45,0.1)",
-            color:"#fff"
-          },
-        }}
-      >
-        <Toolbar />
-        <List>
-          <ListItemButton
-            component={Link}
-            to="/admin/Dashboard"
-            sx={{
-              display: "flex",
-              justifyContent: open ? "initial" : "center",
-              px: 2,
-            }}
-          >
-            <ListItemIcon
-              sx={{
-                minWidth: 32,
-                justifyContent: "center",
-                mr: open ? 0 : "auto",
-              }}
-            >
-              <DashboardOutlinedIcon />
-            </ListItemIcon>
-            {open && <ListItemText primary="Dashboard" />}
-          </ListItemButton>
+        )}
 
-          <ListItemButton
-            component={Link}
-            to={`/admin/company/1`}
-            sx={{
-              display: "flex",
-              justifyContent: open ? "initial" : "center",
-              px: 2,
-            }}
-          >
-            <ListItemIcon
-              sx={{
-                minWidth: 32,
-                justifyContent: "center",
-                mr: open ? 0 : "auto",
-              }}
-            >
-              <StoreOutlinedIcon />
-            </ListItemIcon>
-            {open && <ListItemText primary="Company" />}
-          </ListItemButton>
+        <ListItemButton
+          component={Link}
+          to="/admin/Dashboard"
+          sx={menuItemStyle}
+        >
+          <ListItemIcon sx={iconStyle}>
+            <DashboardOutlined />
+          </ListItemIcon>
+          {open && <ListItemText primary="Dashboard" />}
+        </ListItemButton>
 
-          <ListItemButton
-            component={Link}
-            onClick={() => setOpenProduct(!openProduct)}
-            sx={{
-              display: "flex",
-              justifyContent: open ? "initial" : "center",
-              px: 2,
-            }}
+        {/* COMPANY */}
+        {open && (
+          <Typography
+            sx={{ px: 3, py: 1, fontSize: 14, opacity: 0.6, color: "#e5e7eb" }}
           >
-            <ListItemIcon
-              sx={{
-                minWidth: 32,
-                justifyContent: "center",
-                mr: open ? 0 : "auto",
-              }}
-            >
-              <Inventory2OutlinedIcon />
-            </ListItemIcon>
-            {open && <ListItemText primary="Product Management" />}
-            {open &&
-              (openProduct ? (
-                <ExpandLessOutlinedIcon />
-              ) : (
-                <ExpandMoreOutlinedIcon />
-              ))}
-          </ListItemButton>
-          <Collapse in={openProduct} timeout="auto" unmountOnExit>
-            <List component="div" disablePadding>
-              <ListItemButton
-                component={Link}
-                to="/admin/AddProduct"
-                sx={{
-                  pl: open ? 6 : 2,
-                  justifyContent: open ? "initial" : "center",
-                }}
-              >
-                <ListItemIcon
-                  sx={{
-                    minWidth: 32,
-                    justifyContent: "center",
-                    mr: open ? 0 : "auto",
-                  }}
-                >
-                  <InventoryRoundedIcon />
-                </ListItemIcon>
-                {open && <ListItemText primary="Add Product" />}
-              </ListItemButton>
-            </List>
-            <List component="div" disablePadding>
-              <ListItemButton
-                component={Link}
-                to="/admin/AddProduct"
-                sx={{
-                  pl: open ? 6 : 2,
-                  justifyContent: open ? "initial" : "center",
-                }}
-              >
-                <ListItemIcon
-                  sx={{
-                    minWidth: 32,
-                    justifyContent: "center",
-                    mr: open ? 0 : "auto",
-                  }}
-                >
-                  <CategoryOutlinedIcon />
-                </ListItemIcon>
-                {open && <ListItemText primary="Category Master" />}
-              </ListItemButton>
-            </List>
-            <List component="div" disablePadding>
-              <ListItemButton
-                component={Link}
-                to="/admin/AddProduct"
-                sx={{
-                  pl: open ? 6 : 2,
-                  justifyContent: open ? "initial" : "center",
-                }}
-              >
-                <ListItemIcon
-                  sx={{
-                    minWidth: 32,
-                    justifyContent: "center",
-                    mr: open ? 0 : "auto",
-                  }}
-                >
-                  <StraightenRoundedIcon />
-                </ListItemIcon>
-                {open && <ListItemText primary="Size Master" />}
-              </ListItemButton>
-            </List>
-          </Collapse>
+            COMPANY
+          </Typography>
+        )}
 
-          {/* Order Management */}
-          <ListItemButton
-            component={Link}
-            onClick={() => setOpenOrder(!openOrder)}
-            sx={{
-              display: "flex",
-              justifyContent: open ? "initial" : "center",
-              px: 2,
-            }}
+        <ListItemButton
+          component={Link}
+          to="/admin/company/1"
+          sx={menuItemStyle}
+        >
+          <ListItemIcon sx={iconStyle}>
+            <StoreOutlined />
+          </ListItemIcon>
+          {open && <ListItemText primary="Company Details" />}
+        </ListItemButton>
+
+        {/* PRODUCT MANAGEMENT */}
+        {open && (
+          <Typography
+            sx={{ px: 3, py: 1, fontSize: 14, opacity: 0.6, color: "#e5e7eb" }}
           >
-            <ListItemIcon
-              sx={{
-                minWidth: 32,
-                justifyContent: "center",
-                mr: open ? 0 : "auto",
-              }}
-            >
-              <ShoppingCartOutlinedIcon />
-            </ListItemIcon>
-            {open && <ListItemText primary="Order Management" />}
-            {open &&
-              (openOrder ? (
-                <ExpandLessOutlinedIcon />
-              ) : (
-                <ExpandMoreOutlinedIcon />
-              ))}
-          </ListItemButton>
-          <Collapse in={openOrder} timeout="auto" unmountOnExit>
-            <List component="div" disablePadding>
+            PRODUCT
+          </Typography>
+        )}
+
+        <ListItemButton
+          sx={menuItemStyle}
+          onClick={() => setOpenProduct(!openProduct)}
+        >
+          <ListItemIcon sx={iconStyle}>
+            <Inventory2Outlined />
+          </ListItemIcon>
+          {open && <ListItemText primary="Product Management" />}
+          {open && (openProduct ? <ExpandLess /> : <ExpandMore />)}
+        </ListItemButton>
+
+        <Collapse in={openProduct}>
+          <List disablePadding>
+            {[
+              ["Product Master", "/admin/ProductsMaster", <CategoryOutlined />],
+              ["Product Category", "/admin/CategoryMaster", <Inventory />],
+              ["Size Master", "/admin/SizeMaster", <Straighten />],
+              ["Package Type", "/admin/PackageType", <BackpackIcon />],
+              ["Product Price", "/admin/ProductPrice", <LocalOfferIcon />],
+            ].map(([label, to, icon], i) => (
               <ListItemButton
+                key={i}
                 component={Link}
-                to="/admin/order/orders"
-                sx={{
-                  textDecoration: "none",
-                  pl: open ? 6 : 2,
-                  justifyContent: open ? "initial" : "center",
-                }}
+                to={to}
+                sx={{ ...menuItemStyle, pl: 5 }}
               >
-                <ListItemIcon
-                  sx={{
-                    minWidth: 32,
-                    justifyContent: "center",
-                    mr: open ? 0 : "auto",
-                  }}
-                >
-                  <ShoppingBagOutlinedIcon />
-                </ListItemIcon>
-                {open && <ListItemText primary="Order" />}
+                <ListItemIcon sx={iconStyle}>{icon}</ListItemIcon>
+                {open && <ListItemText primary={label} />}
               </ListItemButton>
-            </List>
-          </Collapse>
-        </List>
-      </Drawer>
+            ))}
+          </List>
+        </Collapse>
+
+        {/* STOCK */}
+        {open && (
+          <Typography
+            sx={{ px: 3, py: 1, fontSize: 14, opacity: 0.6, color: "#e5e7eb" }}
+          >
+            STOCK
+          </Typography>
+        )}
+
+        <ListItemButton
+          sx={menuItemStyle}
+          onClick={() => setOpenStock(!openStock)}
+        >
+          <ListItemIcon sx={iconStyle}>
+            <ShoppingCartOutlined />
+          </ListItemIcon>
+          {open && <ListItemText primary="Stock Management" />}
+          {open && (openStock ? <ExpandLess /> : <ExpandMore />)}
+        </ListItemButton>
+
+        <Collapse in={openStock}>
+          <List disablePadding>
+            {[
+              ["Batch Master", "/admin/BatchMaster", <Inventory2Outlined />],
+            ].map(([label, to, icon], i) => (
+              <ListItemButton
+                key={i}
+                component={Link}
+                to={to}
+                sx={{ ...menuItemStyle, pl: 5 }}
+              >
+                <ListItemIcon sx={iconStyle}>{icon}</ListItemIcon>
+                {open && <ListItemText primary={label} />}
+              </ListItemButton>
+            ))}
+          </List>
+        </Collapse>
+
+        {/* ORDERS */}
+        {open && (
+          <Typography
+            sx={{ px: 3, py: 1, fontSize: 14, opacity: 0.6, color: "#e5e7eb" }}
+          >
+            ORDERS
+          </Typography>
+        )}
+
+        <ListItemButton
+          sx={menuItemStyle}
+          onClick={() => setOpenOrder(!openOrder)}
+        >
+          <ListItemIcon sx={iconStyle}>
+            <ShoppingCartOutlined />
+          </ListItemIcon>
+          {open && <ListItemText primary="Order Management" />}
+          {open && (openOrder ? <ExpandLess /> : <ExpandMore />)}
+        </ListItemButton>
+
+        <Collapse in={openOrder}>
+          <List disablePadding>
+            <ListItemButton
+              component={Link}
+              to="/admin/orders"
+              sx={{ ...menuItemStyle, pl: 5 }}
+            >
+              <ListItemIcon sx={iconStyle}>
+                <ShoppingBagOutlined />
+              </ListItemIcon>
+              {open && <ListItemText primary="Orders" />}
+            </ListItemButton>
+          </List>
+        </Collapse>
+      </List>
     </Box>
+    // {/* </Drawer> */}
   );
 };
 

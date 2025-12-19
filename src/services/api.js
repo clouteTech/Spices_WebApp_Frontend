@@ -19,6 +19,8 @@ export const instance = axios.create({
 // Add request interceptor
 instance.interceptors.request.use((config) => {
   const token = sessionStorage.getItem("token"); // 👈 read from sessionStorage
+  console.log(sessionStorage.getItem("token"));
+
   if (token) {
     config.headers.Authorization = `Bearer ${token}`;
   }

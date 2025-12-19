@@ -72,12 +72,16 @@ const Login = () => {
       const response = await postUserLogin(formData);
       console.log("Full login response:", response);
 
-      if (response?.userType === "Root_User") {
+      const userData = response.data;
+      console.log("userData:", userData);
+
+      if (userData?.userType === "Root_User") {
+        console.log("checking response");
         setRole("admin");
         setIsAuthenticated(true);
         sessionStorage.setItem("role", "admin");
         sessionStorage.setItem("isAuthenticated", "true");
-        sessionStorage.setItem("token", response.token);
+        sessionStorage.setItem("token", userData.token);
 
         toast.success("Admin Logged in Successfully");
         navigate("/admin/dashboard");

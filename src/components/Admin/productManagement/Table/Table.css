@@ -1,0 +1,166 @@
+/* =========================
+   BASE TABLE CONTAINER
+========================= */
+.custom-datatable {
+  background: #ffffff;
+  border-radius: 12px;
+  overflow: hidden;
+  font-family: "Inter", sans-serif;
+}
+
+/* =========================
+   HEADER (TITLE ROW)
+========================= */
+.custom-datatable .p-datatable-thead > tr:first-child > th {
+  background-color: #2f343b;
+  color: #ffffff;
+  font-weight: 600;
+  font-size: 14px;
+  padding: 14px 16px;
+  border: none;
+  text-align: left;
+  vertical-align: middle;
+}
+
+/* Header corner radius fix */
+.custom-datatable .p-datatable-thead > tr:first-child > th:first-child {
+  border-top-left-radius: 12px;
+}
+.custom-datatable .p-datatable-thead > tr:first-child > th:last-child {
+  border-top-right-radius: 12px;
+}
+
+/* =========================
+   FILTER (SEARCH) ROW
+========================= */
+.custom-datatable .p-datatable-thead > tr:nth-child(2) > th {
+  background-color: #3a4047;
+  padding: 10px 16px;
+  border: none;
+}
+
+/* Filter input */
+.custom-datatable .p-inputtext {
+  height: 34px;
+  border-radius: 6px;
+  font-size: 13px;
+  padding: 6px 10px;
+}
+
+/* Filter dropdown */
+.custom-datatable .p-dropdown {
+  height: 34px;
+  border-radius: 6px;
+  font-size: 13px;
+}
+
+/* Remove blue glow */
+.custom-datatable .p-inputtext:focus,
+.custom-datatable .p-dropdown:focus {
+  box-shadow: none;
+  border-color: #94a3b8;
+}
+
+/* Hide filter funnel icons */
+.custom-datatable .p-column-filter-menu-button {
+  display: none;
+}
+
+/* =========================
+   TABLE BODY
+========================= */
+.custom-datatable .p-datatable-tbody > tr > td {
+  padding: 14px 16px;
+  font-size: 14px;
+  color: #374151;
+  border-bottom: 1px solid #e5e7eb;
+  vertical-align: middle;
+}
+
+/* Zebra rows */
+.custom-datatable .p-datatable-tbody > tr:nth-child(even) {
+  background-color: #fafafa;
+}
+
+/* Hover effect */
+.custom-datatable .p-datatable-tbody > tr:hover {
+  background-color: #f1f5f9;
+}
+
+/* Bottom corner radius fix */
+.custom-datatable .p-datatable-tbody > tr:last-child > td:first-child {
+  border-bottom-left-radius: 12px;
+}
+.custom-datatable .p-datatable-tbody > tr:last-child > td:last-child {
+  border-bottom-right-radius: 12px;
+}
+
+/* =========================
+   STATUS TEXT
+========================= */
+.status-active {
+  color: #16a34a;
+  font-weight: 600;
+}
+
+/* =========================
+   PAGINATOR
+========================= */
+.custom-datatable .p-paginator {
+  padding: 14px;
+  justify-content: center;
+}
+
+.custom-datatable .p-paginator .p-paginator-pages .p-paginator-page {
+  border-radius: 8px;
+}
+
+/* =========================
+   TOP BAR (SEARCH + CLEAR)
+========================= */
+.table-topbar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 12px 16px;
+  border-bottom: 1px solid #e5e7eb;
+}
+
+/* Clear button */
+.clear-btn {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  background: #ffffff;
+  border: 1px solid #38bdf8;
+  color: #0284c7;
+  padding: 8px 14px;
+  border-radius: 8px;
+  font-size: 14px;
+  cursor: pointer;
+}
+
+.clear-btn:hover {
+  background-color: #e0f2fe;
+}
+
+/* Search input */
+.table-topbar .p-input-icon-left {
+  position: relative;
+}
+
+.table-topbar .p-input-icon-left > i {
+  position: absolute;
+  left: 10px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: #6b7280;
+}
+
+.table-topbar .p-input-icon-left > input {
+  padding-left: 34px;
+  height: 38px;
+  width: 220px;
+  border-radius: 8px;
+  font-size: 14px;
+}

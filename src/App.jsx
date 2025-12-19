@@ -7,6 +7,7 @@ import CustomerRoutes from "./routes/CustomerRoutes";
 import AdminRoutes from "./routes/AdminRoutes";
 import { useUser } from "./context/UserContext";
 
+
 const App = () => {
   const { role } = useUser();
   return (
