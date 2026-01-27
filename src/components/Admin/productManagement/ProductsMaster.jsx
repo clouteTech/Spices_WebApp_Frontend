@@ -1,4 +1,4 @@
-import { useEffect, useState, useCallback } from "react";
+import { useEffect, useState, useCallback, useRef } from "react";
 import {
   Box,
   Button,
@@ -20,7 +20,8 @@ import MoreVertIcon from "@mui/icons-material/MoreVert";
 import BorderColorTwoToneIcon from "@mui/icons-material/BorderColorTwoTone";
 import DeleteOutlineTwoToneIcon from "@mui/icons-material/DeleteOutlineTwoTone";
 import ClearOutlinedIcon from "@mui/icons-material/ClearOutlined";
-import { toast } from "react-toastify";
+import CheckCircleOutlineRoundedIcon from "@mui/icons-material/CheckCircleOutlineRounded";
+import { useToast } from "../../../context/ToastContext";
 import GlobalModal from "../../../ui/GlobalModal";
 import { GlobalDeleteModal } from "../../../ui/GlobalModal";
 import Table from "./Table/Table";
@@ -50,6 +51,8 @@ import {
   getProductType,
 } from "../../../services/categoryService";
 
+import { OverlayPanel } from "primereact/overlaypanel";
+
 import {
   uploadProductImages,
   getProductImages,
@@ -58,6 +61,7 @@ import {
 } from "../../../services/imageService";
 
 import { Card, CardContent, Divider } from "@mui/material";
+import { activateMasterEntity } from "../../../services/activate";
 
 const TYPE_LABELS = {
   PS: "Powdered Spices",
@@ -83,6 +87,7 @@ const DEFAULT_FORM = {
 };
 
 const ProductsMaster = () => {
+  const { showToast } = useToast();
   const [open, setOpen] = useState(false);
   const [openDelete, setOpenDelete] = useState(false);
   const [productType, setProductType] = useState([]);
@@ -93,15 +98,12 @@ const ProductsMaster = () => {
   // productImages will be array of objects:
   // { file: File | null, url: string (preview or server url), isDefault: boolean }
   const [productImages, setProductImages] = useState([]);
-  const generateId = () => {
-    return "id-" + Math.random().toString(36).substr(2, 9);
-  };
 
   const [form, setForm] = useState(DEFAULT_FORM);
   const [pagination, setPagination] = useState({
     page: 0,
     size: 10,
-    productStatus: true,
+    first: 0,
   });
   const [totalElements, setTotalElements] = useState(0);
   const [loading, setLoading] = useState(false);
@@ -109,12 +111,13 @@ const ProductsMaster = () => {
   const [editId, setEditId] = useState(null);
   const [deleteId, setDeleteId] = useState(null);
 
+  // ===== ACTION MENU =====
+  const actionRef = useRef(null);
+  const [selectedRow, setSelectedRow] = useState(null);
+
   const productId = editId || localStorage.getItem("activeProductId");
   const imagesEnabled = !!productId;
 
-  const [anchorE1, setAnchorE1] = useState(null);
-  const [menuRowId, setMenuRowId] = useState(null);
-  const [keywordInput, setKeywordInput] = useState("");
   const fetchProductType = useCallback(async () => {
     try {
       const res = await getProductType();
@@ -127,9 +130,49 @@ const ProductsMaster = () => {
       setProductType(formatted);
     } catch (err) {
       console.log("Error Fetching Data Types:", err);
-      toast.error("Failed to load Product Types");
+      showToast(
+        "Failed to load Product Types",
+        "error",
+        "fetch-productType-error",
+      );
     }
   }, []);
+
+  // const fetchProducts = useCallback(async () => {
+  //   setLoading(true);
+  //   try {
+  //     const payload = {
+  //       page: pagination.page,
+  //       size: pagination.size,
+  //       status: pagination.productStatus ?? true,
+  //     };
+  //     const res = await getProductList(payload);
+  //     const data = res?.data?.data?.content || [];
+  //     console.log(data);
+  //     const total = res?.data?.data?.totalElements || 0;
+
+  //     const mapped = data.map((row, index) => ({
+  //       id: row.productId,
+  //       productName: row.productName,
+  //       productCode: row.productCode,
+  //       productCategoryId: row.productCategoryId,
+  //       productCategoryName: row.productCategoryName || row.categoryName,
+  //       productType: row.productType,
+  //       ingredients: row.ingredients,
+  //       organicOrNot: row.organicOrNot,
+  //       quality: row.quality,
+  //       productStatus: row.productStatus ? "Active" : "Inactive",
+  //     }));
+
+  //     setProducts(mapped);
+  //     setTotalElements(total);
+  //   } catch (err) {
+  //     console.error("Error fetching products:", err);
+  //     showToast("Failed to fetch products", "error", "fetch-products-error");
+  //   } finally {
+  //     setLoading(false);
+  //   }
+  // }, [pagination]);
 
   const fetchProducts = useCallback(async () => {
     setLoading(true);
@@ -137,36 +180,34 @@ const ProductsMaster = () => {
       const payload = {
         page: pagination.page,
         size: pagination.size,
-        status: pagination.productStatus ?? true,
+        productStatus: true,
       };
+
       const res = await getProductList(payload);
       const data = res?.data?.data?.content || [];
       const total = res?.data?.data?.totalElements || 0;
-      const startIndex = pagination.page * pagination.size;
 
-      const mapped = data.map((row, index) => ({
-        id: row.productId,
-        serialNo: startIndex + index + 1,
-        productName: row.productName,
-        productCode: row.productCode,
-        productCategoryId: row.productCategoryId,
-        productCategoryName: row.productCategoryName || row.categoryName,
-        productType: row.productType,
-        ingredients: row.ingredients,
-        organicOrNot: row.organicOrNot,
-        quality: row.quality,
-        productStatus: row.productStatus ? "Active" : "Inactive",
-      }));
-
-      setProducts(mapped);
+      setProducts(
+        data.map((row) => ({
+          id: row.productId,
+          productName: row.productName,
+          productCode: row.productCode,
+          productCategoryName: row.productCategoryName || row.categoryName,
+          productType: row.productType,
+          ingredients: row.ingredients,
+          organicOrNot: row.organicOrNot,
+          quality: row.quality,
+          productStatus: row.productStatus ? "Active" : "Inactive",
+        })),
+      );
       setTotalElements(total);
     } catch (err) {
-      console.error("Error fetching products:", err);
-      toast.error("Failed to fetch products");
+      showToast("Failed to fetch products", "error");
     } finally {
       setLoading(false);
     }
-  }, [pagination]);
+  }, [pagination.page, pagination.size]);
+
 
   const fetchCategoriesByType = async (type) => {
     if (!type) return setCategoryList([]);
@@ -175,7 +216,7 @@ const ProductsMaster = () => {
       setCategoryList(res?.data?.data || []);
     } catch (err) {
       console.error("Error fetching categories:", err);
-      toast.error("Failed to load categories");
+      showToast("Failed to load categories", "error", "fetch-categories-error");
       setCategoryList([]);
     }
   };
@@ -218,26 +259,16 @@ const ProductsMaster = () => {
     setProductImages([]);
   };
 
-  const handleMenuOpen = (e, rowId) => {
-    setAnchorE1(e.currentTarget);
-    setMenuRowId(rowId);
-  };
-
-  const handleMenuClose = () => {
-    setAnchorE1(null);
-    setMenuRowId(null);
-  };
-
   const handleChange = async (e) => {
     const { name, value, type, checked } = e.target;
     const fieldValue =
       type === "checkbox"
         ? checked
         : value === "true"
-        ? true
-        : value === "false"
-        ? false
-        : value;
+          ? true
+          : value === "false"
+            ? false
+            : value;
 
     setForm((prev) => ({ ...prev, [name]: fieldValue }));
 
@@ -260,35 +291,35 @@ const ProductsMaster = () => {
     }
   };
 
-  const handlePageChange = (newPage) => {
-    setPagination((prev) => ({ ...prev, page: newPage }));
-  };
+  // const handlePageChange = (newPage) => {
+  //   setPagination((prev) => ({ ...prev, page: newPage }));
+  // };
 
-  const handlePageSizeChange = (newSize) => {
-    setPagination((prev) => ({ ...prev, size: newSize, page: 0 }));
-  };
+  // const handlePageSizeChange = (newSize) => {
+  //   setPagination((prev) => ({ ...prev, size: newSize, page: 0 }));
+  // };
 
-  const BASE_URL = import.meta.env.VITE_API_URL;
+  // const BASE_URL = import.meta.env.VITE_API_URL;
 
-  const normalizeBackendImagesLocal = (backendImages = []) =>
-    backendImages.map((img = {}) => {
-      const rawUrl = img.imageUrl || img.thumbnailUrl || ""; // backend field names
+  // const normalizeBackendImagesLocal = (backendImages = []) =>
+  //   backendImages.map((img = {}) => {
+  //     const rawUrl = img.imageUrl || img.thumbnailUrl || ""; // backend field names
 
-      const url = rawUrl.startsWith("/")
-        ? `${BASE_URL}${rawUrl}`
-        : rawUrl.startsWith("http")
-        ? rawUrl
-        : rawUrl
-        ? `${BASE_URL}/${rawUrl}`
-        : "";
+  //     const url = rawUrl.startsWith("/")
+  //       ? `${BASE_URL}${rawUrl}`
+  //       : rawUrl.startsWith("http")
+  //         ? rawUrl
+  //         : rawUrl
+  //           ? `${BASE_URL}/${rawUrl}`
+  //           : "";
 
-      return {
-        id: img.productImgId, // FIX BACKEND FIELD
-        file: null,
-        url,
-        isDefault: !!img.primaryImage, // backend sends primaryImage
-      };
-    });
+  //     return {
+  //       id: img.productImgId, // FIX BACKEND FIELD
+  //       file: null,
+  //       url,
+  //       isDefault: !!img.primaryImage, // backend sends primaryImage
+  //     };
+  //   });
 
   // const handleEditClick = async (row) => {
   //   try {
@@ -413,7 +444,7 @@ const ProductsMaster = () => {
           console.warn(
             "Failed to load categories for type:",
             data.productCategoryType,
-            err
+            err,
           );
           setCategoryList([]);
         }
@@ -421,7 +452,7 @@ const ProductsMaster = () => {
 
       // Use fetchedCategories (not categoryList state) to pick matching category
       const cat = fetchedCategories.find(
-        (c) => String(c.id) === String(data.productCategoryId)
+        (c) => String(c.id) === String(data.productCategoryId),
       );
 
       if (cat) {
@@ -439,7 +470,7 @@ const ProductsMaster = () => {
       setOpen(true);
     } catch (err) {
       console.error(err);
-      toast.error("Failed to load product");
+      showToast("Failed to load product", "error");
     }
   };
 
@@ -447,7 +478,7 @@ const ProductsMaster = () => {
     const id = Number(deleteId);
 
     if (!id || isNaN(id)) {
-      toast.error("Invalid Product ID");
+      showToast("Invalid Product ID", "error");
       return;
     }
 
@@ -455,21 +486,26 @@ const ProductsMaster = () => {
       const response = await deleteProduct(id);
 
       if (response?.data?.status === 200) {
-        toast.success(
+        showToast(
           response?.data?.msg ||
             response?.data?.message ||
-            "Product deleted successfully"
+            "Product deleted successfully",
+          "success",
         );
 
         fetchProducts(); // refresh list
       } else {
-        toast.error(
-          response?.data?.msg || "Failed to delete product. Please try again."
+        showToast(
+          response?.data?.msg || "Failed to delete product. Please try again.",
+          "error",
         );
       }
     } catch (error) {
       console.log("Error deleting product:", error);
-      toast.error(error.response?.data?.msg || "Server error while deleting");
+      showToast(
+        error.response?.data?.msg || "Server error while deleting",
+        "error",
+      );
     } finally {
       setOpenDelete(false);
     }
@@ -514,13 +550,13 @@ const ProductsMaster = () => {
       setProductImages(normalized);
     } catch (err) {
       console.error(err);
-      toast.error("Failed to load images");
+      showToast("Failed to load images", "error");
     }
   };
 
   const handleProductImagesChange = async (files) => {
     if (!productId) {
-      toast.error("Save product first");
+      showToast("Save product first", "warning");
       return;
     }
 
@@ -529,12 +565,12 @@ const ProductsMaster = () => {
 
     try {
       await uploadProductImages(productId, formData);
-      toast.success("Images uploaded");
+      showToast("Images uploaded", "success");
 
       // 🔁 ALWAYS reload from backend
       await loadProductImages(productId);
     } catch (err) {
-      toast.error("Upload failed");
+      showToast("Upload failed", "error");
     }
   };
 
@@ -543,7 +579,7 @@ const ProductsMaster = () => {
     const iid = Number(imageId);
 
     if (!Number.isInteger(pid) || !Number.isInteger(iid)) {
-      toast.error("Invalid Product/Image ID");
+      showToast("Invalid Product/Image ID", "error");
       return;
     }
 
@@ -553,14 +589,14 @@ const ProductsMaster = () => {
         prev.map((img) => ({
           ...img,
           isDefault: img.id === iid,
-        }))
+        })),
       );
 
       // ✅ CALL BACKEND (DATA SYNC ONLY)
       await setPrimaryImage(pid, iid);
-      toast.success("Default image updated");
+      showToast("Default image updated", "success");
     } catch (err) {
-      toast.error("Failed to set default image");
+      showToast("Failed to set default image", "error");
     }
   };
 
@@ -569,24 +605,119 @@ const ProductsMaster = () => {
     const pid = Number(productId);
 
     if (!Number.isInteger(pid) || !Number.isInteger(iid)) {
-      toast.error("Invalid Image ID");
+      showToast("Invalid Image ID", "error");
       return;
     }
 
     try {
       await deleteProductImage(pid, iid);
-      toast.success("Image deleted");
+      showToast("Image deleted", "success");
       await loadProductImages(pid);
     } catch (err) {
       console.error(err);
-      toast.error("Delete failed");
+      showToast("Delete failed", "error");
     }
   };
 
+  const handleActivate = async (row) => {
+    try {
+      await activateMasterEntity("PRODUCT_MASTER", row.id);
+      showToast("Product Activated Successfully", "success");
+      fetchProducts();
+    } catch (err) {
+      console.error(err);
+      showToast("Failed to activate Product", "error");
+    }
+  };
+
+  // const handleProductDetailsSave = async () => {
+  //   if (
+  //     !form.productName ||
+  //     !form.productType ||
+  //     !form.productCategoryId ||
+  //     !form.quality ||
+  //     form.organicOrNot === null ||
+  //     form.preservativeAdded === null ||
+  //     !form.ingredients ||
+  //     !form.description
+  //   ) {
+  //     showToast("Please fill all fields", "warning");
+  //     return;
+  //   }
+
+  //   try {
+  //     const payload = {
+  //       productCode: form.productCode,
+  //       productName: form.productName,
+  //       productType: form.productType,
+  //       productCategoryId: form.productCategoryId,
+  //       productCategoryName: form.productCategoryName,
+  //       quality: form.quality,
+  //       organicOrNot: form.organicOrNot,
+  //       preservativeAdded: form.preservativeAdded,
+  //       ownBrand: form.ownBrand,
+  //       brandName: form.brandName,
+  //       ingredients: form.ingredients,
+  //       description: form.description,
+  //       productStatus: form.productStatus,
+  //       keywords: form.keywords,
+  //     };
+
+  //     // let res;
+  //     // if (editId) {
+  //     //   res = await updateProduct({
+  //     //     ...payload,
+  //     //     productId:editId,
+  //     //   });
+  //     // } else {
+  //     //   res = await addProduct(payload);
+  //     // }
+
+  //     const res = await updateProduct(editId);
+
+  //     const ok = res?.status === 200 || res?.data?.status === 200;
+  //     if (ok) {
+  //       // robustly read returned id (depends on your backend response shape)
+  //       const newId =
+  //         res?.data?.data?.productId ??
+  //         res?.data?.productId ??
+  //         res?.data?.id ??
+  //         editId;
+
+  //       if (newId) {
+  //         setEditId(newId);
+  //         localStorage.setItem("activeProductId", String(newId));
+  //       }
+
+  //       showToast("Product Details Saved Successfully", "success");
+  //       fetchProducts();
+  //     } else {
+  //       showToast("Failed to save Product Details", "error");
+  //     }
+  //   } catch (err) {
+  //     console.error("Product Details Save Error:", err);
+  //     showToast("Failed to save Product Details", "error");
+  //   }
+  // };
 
   const handleProductDetailsSave = async () => {
+    if (
+      !form.productName ||
+      !form.productType ||
+      !form.productCategoryId ||
+      !form.quality ||
+      form.organicOrNot === null ||
+      form.preservativeAdded === null ||
+      !form.ingredients ||
+      !form.description
+    ) {
+      showToast("Please fill all fields", "warning");
+      return;
+    }
+
     try {
       const payload = {
+        productId: editId || null, // 🔥 MUST be inside body
         productCode: form.productCode,
         productName: form.productName,
         productType: form.productType,
@@ -596,44 +727,32 @@ const ProductsMaster = () => {
         organicOrNot: form.organicOrNot,
         preservativeAdded: form.preservativeAdded,
         ownBrand: form.ownBrand,
-        brandName: form.brandName,
+        brand: form.brandName,
         ingredients: form.ingredients,
         description: form.description,
         productStatus: form.productStatus,
         keywords: form.keywords,
       };
 
-      let res;
-      if (editId) {
-        res = await updateProduct(editId, payload);
-      } else {
-        res = await addProduct(payload);
-      }
+      const res = editId
+        ? await updateProduct(payload) // ✅ UPDATE
+        : await addProduct(payload); // ✅ ADD
 
       const ok = res?.status === 200 || res?.data?.status === 200;
+
       if (ok) {
-        // robustly read returned id (depends on your backend response shape)
-        const newId =
-          res?.data?.data?.productId ??
-          res?.data?.productId ??
-          res?.data?.id ??
-          editId;
-
-        if (newId) {
-          setEditId(newId);
-          localStorage.setItem("activeProductId", String(newId));
-        }
-
-        toast.success("Product Details Saved Successfully");
+        showToast("Product Details Saved Successfully", "success");
         fetchProducts();
+        setOpen(false);
       } else {
-        toast.error("Failed to save Product Details");
+        showToast("Failed to save Product Details", "error");
       }
     } catch (err) {
       console.error("Product Details Save Error:", err);
-      toast.error("Failed to save Product Details");
+      showToast("Failed to save Product Details", "error");
     }
   };
+
 
   // const handleProductImagesSave = async()=>{
   //   try{
@@ -673,73 +792,128 @@ const ProductsMaster = () => {
     productImages[0]?.id ??
     "";
 
+  // const columns = [
+  //   { field: "serialNo", headerName: "S.No", width: 100, sortable: false },
+  //   { field: "productCode", headerName: "Product Code", minWidth: 150 },
+  //   { field: "productName", headerName: "Product Name", minWidth: 250 },
+  //   {
+  //     field: "productCategoryName",
+  //     headerName: "Category Name",
+  //     minWidth: 250,
+  //   },
+  //   { field: "ingredients", headerName: "Ingredients", minWidth: 200 },
+  //   {
+  //     field: "organicOrNot",
+  //     headerName: "Organic",
+  //     minWidth: 100,
+  //     renderCell: (params) => (params.value ? "Yes" : "No"),
+  //   },
+  //   {
+  //     field: "productStatus",
+  //     headerName: "Status",
+  //     minWidth: 150,
+  //     renderCell: (params) => (
+  //       <span
+  //         style={{
+  //           color: params.value ? "green" : "red",
+  //           fontWeight: "bold",
+  //         }}
+  //       >
+  //         {params.value ? "Active" : "Inactive"}
+  //       </span>
+  //     ),
+  //   },
+  //   {
+  //     field: "actions",
+  //     headerName: "Actions",
+  //     minWidth: 100,
+  //     renderCell: (params) => (
+  //       <>
+  //         <IconButton onClick={(e) => handleMenuOpen(e, params.row.id)}>
+  //           <MoreVertIcon />
+  //         </IconButton>
+  //         <Menu
+  //           anchorEl={anchorE1}
+  //           open={menuRowId === params.row.id}
+  //           onClose={handleMenuClose}
+  //         >
+  //           <MenuItem
+  //             onClick={() => {
+  //               handleMenuClose();
+  //               handleEditClick(params.row);
+  //             }}
+  //           >
+  //             <BorderColorTwoToneIcon />
+  //             Edit
+  //           </MenuItem>
+  //           <MenuItem
+  //             onClick={() => {
+  //               setDeleteId(params.row.id);
+  //               setOpenDelete(true);
+  //               handleMenuClose();
+  //             }}
+  //           >
+  //             <DeleteOutlineTwoToneIcon />
+  //             Delete
+  //           </MenuItem>
+  //         </Menu>
+  //       </>
+  //     ),
+  //   },
+  // ];
+
   const columns = [
-    { field: "serialNo", headerName: "S.No", width: 100, sortable: false },
-    { field: "productCode", headerName: "Product Code", minWidth: 150 },
-    { field: "productName", headerName: "Product Name", minWidth: 250 },
+    {
+      header: "S.No",
+      body: (_, options) => options.rowIndex + 1,
+      style: { width: "80px" },
+    },
+    {
+      field: "productCode",
+      header: "Product Code",
+    },
+    {
+      field: "productName",
+      header: "Product Name",
+    },
     {
       field: "productCategoryName",
-      headerName: "Category Name",
-      minWidth: 250,
-    },
-    { field: "ingredients", headerName: "Ingredients", minWidth: 200 },
-    {
-      field: "organicOrNot",
-      headerName: "Organic",
-      minWidth: 100,
-      renderCell: (params) => (params.value ? "Yes" : "No"),
+      header: "Category Name",
     },
     {
-      field: "productStatus",
-      headerName: "Status",
-      minWidth: 150,
-      renderCell: (params) => (
+      field: "ingredients",
+      header: "Ingredients",
+    },
+    {
+      header: "Organic",
+      body: (row) => (row.organicOrNot ? "Yes" : "No"),
+    },
+    {
+      header: "Status",
+      body: (row) => (
         <span
           style={{
-            color: params.value ? "green" : "red",
-            fontWeight: "bold",
+            color: row.productStatus === "Active" ? "green" : "red",
+            fontWeight: 600,
           }}
         >
-          {params.value ? "Active" : "Inactive"}
+          {row.productStatus}
         </span>
       ),
     },
     {
-      field: "actions",
-      headerName: "Actions",
-      minWidth: 100,
-      renderCell: (params) => (
-        <>
-          <IconButton onClick={(e) => handleMenuOpen(e, params.row.id)}>
-            <MoreVertIcon />
-          </IconButton>
-          <Menu
-            anchorEl={anchorE1}
-            open={menuRowId === params.row.id}
-            onClose={handleMenuClose}
-          >
-            <MenuItem
-              onClick={() => {
-                handleMenuClose();
-                handleEditClick(params.row);
-              }}
-            >
-              <BorderColorTwoToneIcon />
-              Edit
-            </MenuItem>
-            <MenuItem
-              onClick={() => {
-                setDeleteId(params.row.id);
-                setOpenDelete(true);
-                handleMenuClose();
-              }}
-            >
-              <DeleteOutlineTwoToneIcon />
-              Delete
-            </MenuItem>
-          </Menu>
-        </>
+      header: "Actions",
+      body: (row) => (
+        <IconButton
+          onClick={(e) => {
+            setSelectedRow(row);
+            actionRef.current.toggle(e);
+          }}
+        >
+          <MoreVertIcon />
+        </IconButton>
       ),
+      style: { width: "120px" },
     },
   ];
 
@@ -846,14 +1020,59 @@ const ProductsMaster = () => {
       </Stack>
 
       <Table
-        rows={products}
+        value={products}
         columns={columns}
         pagination={pagination}
-        totalElements={totalElements}
+        totalRecords={totalElements}
         loading={loading}
-        onPageChange={handlePageChange}
-        onPageSizeChange={handlePageSizeChange}
+        enablePagination
+        onPageChange={(data) =>
+          setPagination((prev) => ({
+            ...prev,
+            page: data.page,
+            size: data.size,
+            first: data.first,
+          }))
+        }
       />
+
+      {/* ACTION MENU */}
+      <OverlayPanel ref={actionRef}>
+        {selectedRow?.productStatus === "Inactive" ? (
+          <MenuItem
+            onClick={() => {
+              handleActivate(selectedRow);
+              actionRef.current.hide();
+            }}
+          >
+            <CheckCircleOutlineRoundedIcon sx={{ mr: 1 }} />
+            Activate
+          </MenuItem>
+        ) : (
+          <>
+            <MenuItem
+              onClick={() => {
+                handleEditClick(selectedRow);
+                actionRef.current.hide();
+              }}
+            >
+              <BorderColorTwoToneIcon sx={{ mr: 1 }} />
+              Edit
+            </MenuItem>
+
+            <MenuItem
+              onClick={() => {
+                setDeleteId(selectedRow.id);
+                setOpenDelete(true);
+                actionRef.current.hide();
+              }}
+            >
+              <DeleteOutlineTwoToneIcon sx={{ mr: 1 }} />
+              Delete
+            </MenuItem>
+          </>
+        )}
+      </OverlayPanel>
 
       <GlobalModal
         open={open}
@@ -909,14 +1128,15 @@ const ProductsMaster = () => {
                   getOptionLabel={(option) => option?.name ?? ""}
                   value={
                     categoryList.find(
-                      (cat) => String(cat.id) === String(form.productCategoryId)
+                      (cat) =>
+                        String(cat.id) === String(form.productCategoryId),
                     ) || null
                   }
                   onChange={(e, newValue) =>
                     setForm((prev) => ({
                       ...prev,
                       productCategoryId: newValue ? newValue.id : "",
-                      categoryName: newValue ? newValue.name : "",
+                      productCategoryName: newValue ? newValue.name : "",
                     }))
                   }
                   renderInput={(params) => (
@@ -938,7 +1158,6 @@ const ProductsMaster = () => {
                   onChange={handleChange}
                   sx={{ width: 350 }}
                 />
-
                 <TextField
                   label="Quality"
                   name="quality"

@@ -338,7 +338,7 @@
 //             <Typography variant="h6" gutterBottom>
 //               Address Info
 //             </Typography>
-            
+
 //             <Box component="form" onSubmit={handleAddressSubmit}>
 //               <Grid container spacing={2} alignItems="flex-start">
 //                 <Grid size={{ xs: 5.8 }}>
@@ -430,14 +430,18 @@
 
 // export default CompanyDetails;
 
-
 import React, { useEffect, useState } from "react";
-import { Grid, Paper, Typography, TextField, Button, Box } from "@mui/material";
+import { Grid, Paper, Typography, TextField, Button, Box, Divider } from "@mui/material";
 import { toast } from "react-toastify";
 import { useParams } from "react-router-dom";
-import instance from "../../services/api";
+import { useToast } from "../../context/ToastContext";
+import {
+  getCompanyDetails,
+  updateCompanyDetails,
+} from "../../services/company";
 
 const CompanyDetails = () => {
+  const { showToast } = useToast();
   const { companyId: idFromParams } = useParams();
   const companyId = idFromParams || "1"; // fallback for now
 
@@ -445,107 +449,99 @@ const CompanyDetails = () => {
 
   const [upiQrFile, setUpiQrFile] = useState(null);
 
-  const [generalInfo, setGeneralInfo] = useState({
+  // const [generalInfo, setGeneralInfo] = useState({
+  //   companyName: "",
+  //   companyEmail: "",
+  //   cinNumber: "",
+  //   companyPhoneNo: "",
+  //   customerSupportEmail: "",
+  //   customerSupportMobileNumber: "",
+  //   companyLogo: "",
+  // });
+
+  // const [addressInfo, setAddressInfo] = useState({
+  //   address_1: "",
+  //   address_2: "",
+  //   gstNo: "",
+  //   city: "",
+  //   state: "",
+  //   pincode: "",
+  //   country: "",
+  //   businessAddress: false,
+  // });
+
+  const [companyForm, setCompanyForm] = useState({
     companyName: "",
     companyEmail: "",
-    cinNumber: "",
     companyPhoneNo: "",
+    cinNumber: "",
     customerSupportEmail: "",
     customerSupportMobileNumber: "",
-    companyLogo: "",
-  });
 
-  const [addressInfo, setAddressInfo] = useState({
     address_1: "",
     address_2: "",
-    gstNo: "",
     city: "",
     state: "",
     pincode: "",
     country: "",
-    businessAddress: false,
+    gstNo: "",
   });
 
-  const [bankInfo,setBankInfo]= useState({
-    bankName:"",
-    accountHolderName:"",
-    accountNumber:"",
-    ifscCode:"",
-    branch:"",
-    upiId:"",
-    upiQrImage:"",
-  })
+  const [bankInfo, setBankInfo] = useState({
+    bankName: "",
+    accountHolderName: "",
+    accountNumber: "",
+    ifscCode: "",
+    branch: "",
+    upiId: "",
+    upiQrImage: "",
+  });
 
   // -------------------- Fetch Company Data --------------------
   useEffect(() => {
-    if (!companyId) return;
-    const fetchCompanyDetails = async () => {
+    const fetchCompany = async () => {
       try {
-        const res = await instance.get(
-          `/company/getcompanydetails/${companyId}`
-        );
-        console.log("Company API Response:", res.data);
+        const res = await getCompanyDetails();
 
-        if (res.data.status === 200 && res.data.data) {
-          const companyData = res.data.data;
-
-          setGeneralInfo({
-            companyName: companyData.companyName || "",
-            companyEmail: companyData.companyEmail || "",
-            cinNumber: companyData.cinNumber || "",
-            companyPhoneNo: companyData.companyPhoneNo || "",
-            customerSupportEmail: companyData.customerSupportEmail || "",
+        if (res.data.status === 200) {
+          setCompanyForm({
+            companyName: res.data.data.companyName || "",
+            companyEmail: res.data.data.companyEmail || "",
+            companyPhoneNo: res.data.data.companyPhoneNo || "",
+            cinNumber: res.data.data.cinNumber || "",
+            customerSupportEmail: res.data.data.customerSupportEmail || "",
             customerSupportMobileNumber:
-              companyData.customerSupportMobileNumber || "",
-            companyLogo: companyData.companyLogo || "",
-          });
+              res.data.data.customerSupportMobileNumber || "",
 
-          setAddressInfo({
-            address_1: companyData.address_1 || "",
-            address_2: companyData.address_2 || "",
-            gstNo: companyData.gstNo || "",
-            city: companyData.city || "",
-            state: companyData.state || "",
-            pincode: companyData.pincode || "",
-            country: companyData.country || "",
-            businessAddress: companyData.businessAddress || false,
+            address_1: res.data.data.address_1 || "",
+            address_2: res.data.data.address_2 || "",
+            city: res.data.data.city || "",
+            state: res.data.data.state || "",
+            pincode: res.data.data.pincode || "",
+            country: res.data.data.country || "",
+            gstNo: res.data.data.gstNo || "",
           });
-
-          setBankInfo({
-            bankName:bankInfo.bankName||"",
-            accountHolderName:bankInfo.accountHolderName||"",
-            accountNumber:bankInfo.accountNumber||"",
-            ifscCode:bankInfo.ifscCode||"",
-            branch:bankInfo.branch||"",
-            upiId:bankInfo.upiId||"",
-            upiQrImage:bankInfo.upiQrImage||"",
-          })
-        } else {
-          toast.error(res.data.msg || "Failed to load company details");
         }
-      } catch (error) {
-        console.error("Error fetching company details:", error);
-        toast.error("Failed to fetch company details");
+      } catch {
+        showToast("Failed to load company details");
       }
     };
 
-    fetchCompanyDetails();
-  }, [companyId]);
+    fetchCompany();
+  }, []);
 
   // -------------------- Handlers --------------------
-  const handleGeneralChange = (e) => {
+  const handleChange = (e) => {
     const { name, value } = e.target;
-    setGeneralInfo((prev) => ({ ...prev, [name]: value }));
+    setCompanyForm((prev) => ({
+      ...prev,
+      [name]: value,
+    }));
   };
 
-  const handleAddressChange = (e) => {
-    const { name, value } = e.target;
-    setAddressInfo((prev) => ({ ...prev, [name]: value }));
-  };
-
-  const handleBankChange = (e) =>{
+  const handleBankChange = (e) => {
     setBankInfo({ ...bankInfo, [e.target.name]: e.target.value });
-  }
+  };
 
   const handleLogoChange = (e) => {
     setLogo(e.target.files[0]);
@@ -554,43 +550,18 @@ const CompanyDetails = () => {
   const handleQrChange = (e) => setUpiQr(e.target.files[0]);
 
   // -------------------- Submit Handlers --------------------
-  const handleGeneralSubmit = async (e) => {
-    e.preventDefault();
-    try {
-      const res = await instance.put(
-        `/company/updatecompany/${companyId}`,
-        generalInfo
-      );
-      if (res.data.status === 200) {
-        toast.success("Company Details Updated Successfully!");
-      } else {
-        toast.error(res.data.msg || "Failed to update company details");
-      }
-    } catch (error) {
-      console.error("Update Error:", error);
-      toast.error("Failed to update company details");
-    }
-  };
 
-  const handleAddressSubmit = async (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
+
     try {
-      const payload = {
-        ...addressInfo,
-        businessAddress: Boolean(addressInfo.businessAddress),
-      };
-      const res = await instance.put(
-        `/company/update/companyaddress/${companyId}`,
-        payload
-      );
+      const res = await updateCompanyDetails(companyForm);
+
       if (res.data.status === 200) {
-        toast.success("Address Updated Successfully!");
-      } else {
-        toast.error(res.data.msg || "Failed to update address");
+        showToast("Company details updated successfully", "success");
       }
-    } catch (error) {
-      console.error("Address Update Error:", error);
-      toast.error("Failed to update address");
+    } catch {
+      showToast("Failed to update company details", "error");
     }
   };
 
@@ -608,7 +579,7 @@ const CompanyDetails = () => {
         formData,
         {
           headers: { "Content-Type": "multipart/form-data" },
-        }
+        },
       );
       if (res.data.status === 200) {
         toast.success("Logo Uploaded Successfully!");
@@ -629,7 +600,7 @@ const CompanyDetails = () => {
 
       const res = await instance.put(
         `/company/update/bankdetails/${companyId}`,
-        payload
+        payload,
       );
 
       if (res.data.status === 200) {
@@ -656,7 +627,7 @@ const CompanyDetails = () => {
       const res = await instance.post(
         `/company/uploadupi/${companyId}`,
         formData,
-        { headers: { "Content-Type": "multipart/form-data" } }
+        { headers: { "Content-Type": "multipart/form-data" } },
       );
 
       if (res.data.status === 200) {
@@ -670,8 +641,6 @@ const CompanyDetails = () => {
     }
   };
 
-
-
   // -------------------- UI --------------------
   return (
     <Box sx={{ p: 3 }}>
@@ -680,13 +649,16 @@ const CompanyDetails = () => {
       </Typography>
 
       <Box
+        component="form"
+        onSubmit={handleSubmit}
         display="grid"
         gridTemplateColumns="1fr 360px"
         gap={3}
         sx={{ alignItems: "start" }}
       >
-        {/* -------- Left Side: General Info -------- */}
+        {/* ---------------- LEFT SIDE ---------------- */}
         <Box>
+          {/* -------- General Info -------- */}
           <Paper
             elevation={3}
             sx={{
@@ -697,168 +669,114 @@ const CompanyDetails = () => {
             }}
           >
             <Typography variant="h6" gutterBottom>
-              General Info
+              <strong>General Info</strong>
             </Typography>
-            <Box component="form" onSubmit={handleGeneralSubmit}>
-              <Grid container spacing={2}>
-                {[
-                  { label: "Company Name", name: "companyName" },
-                  {
-                    label: "Company Email",
-                    name: "companyEmail",
-                    type: "email",
-                  },
-                  { label: "CIN Number", name: "cinNumber" },
-                  { label: "Company Phone No.", name: "companyPhoneNo" },
-                  { label: "Support Email", name: "customerSupportEmail" },
-                  {
-                    label: "Support Mobile No.",
-                    name: "customerSupportMobileNumber",
-                  },
-                ].map((field) => (
-                  <Grid item xs={12} sm={6} key={field.name}>
-                    <TextField
-                      fullWidth
-                      variant="outlined"
-                      label={field.label}
-                      name={field.name}
-                      type={field.type || "text"}
-                      value={generalInfo[field.name] || ""}
-                      onChange={handleGeneralChange}
-                    />
-                  </Grid>
-                ))}
-              </Grid>
 
-              <Box sx={{ textAlign: "right", mt: 2 }}>
-                <Button type="submit" variant="contained" color="secondary">
-                  Save General Info
-                </Button>
-              </Box>
+            <Grid container spacing={2}>
+              {[
+                { label: "Company Name", name: "companyName" },
+                { label: "Company Email", name: "companyEmail", type: "email" },
+                { label: "CIN Number", name: "cinNumber" },
+                { label: "Company Phone No.", name: "companyPhoneNo" },
+                { label: "Support Email", name: "customerSupportEmail" },
+                {
+                  label: "Support Mobile No.",
+                  name: "customerSupportMobileNumber",
+                },
+              ].map((field) => (
+                <Grid item xs={12} sm={6} key={field.name}>
+                  <TextField
+                    fullWidth
+                    label={field.label}
+                    name={field.name}
+                    type={field.type || "text"}
+                    value={companyForm[field.name] || ""}
+                    onChange={handleChange}
+                  />
+                </Grid>
+              ))}
+            </Grid>
+
+            {/* -------- Address Info -------- */}
+            <Box mt={4}>
+              <Typography variant="h6" gutterBottom>
+                <strong>Address Info</strong>
+              </Typography>
+            </Box>
+
+            <Grid container spacing={2}>
+              {[
+                { label: "Address Line 1", name: "address_1" },
+                { label: "Address Line 2", name: "address_2" },
+                { label: "GST Number", name: "gstNo" },
+                { label: "City", name: "city" },
+                { label: "State", name: "state" },
+                { label: "Pincode", name: "pincode" },
+                { label: "Country", name: "country" },
+              ].map((field) => (
+                <Grid item xs={12} sm={6} key={field.name}>
+                  <TextField
+                    fullWidth
+                    label={field.label}
+                    name={field.name}
+                    value={companyForm[field.name] || ""}
+                    onChange={handleChange}
+                  />
+                </Grid>
+              ))}
+            </Grid>
+
+            <Box sx={{ textAlign: "right", mt: 3 }}>
+              <Button type="submit" variant="contained" color="primary">
+                Save Company Details
+              </Button>
             </Box>
           </Paper>
 
-          {/* -------- Address Info -------- */}
+          {/* -------- Bank Details (SEPARATE) -------- */}
           <Paper
             elevation={2}
             sx={{
               p: 3,
               borderRadius: 2,
-              background: "linear-gradient(135deg, #e7e1e6ff, #d3bdd4ff)",
-            }}
-          >
-            <Typography variant="h6" gutterBottom>
-              Address Info
-            </Typography>
-            <Box component="form" onSubmit={handleAddressSubmit}>
-              <Grid container spacing={2}>
-                {[
-                  { label: "Address Line 1", name: "address_1" },
-                  { label: "Address Line 2", name: "address_2" },
-                  { label: "GST Number", name: "gstNo" },
-                  { label: "City", name: "city" },
-                  { label: "State", name: "state" },
-                  { label: "Pincode", name: "pincode" },
-                  { label: "Country", name: "country" },
-                ].map((field) => (
-                  <Grid item xs={12} sm={6} key={field.name}>
-                    <TextField
-                      fullWidth
-                      variant="outlined"
-                      label={field.label}
-                      name={field.name}
-                      value={addressInfo[field.name] || ""}
-                      onChange={handleAddressChange}
-                    />
-                  </Grid>
-                ))}
-              </Grid>
-
-              <Box sx={{ textAlign: "right", mt: 2 }}>
-                <Button type="submit" variant="contained" color="secondary">
-                  Save Address Info
-                </Button>
-              </Box>
-            </Box>
-          </Paper>
-          {/* -------- Bank Details -------- */}
-          <Paper
-            elevation={2}
-            sx={{
-              p: 3,
-              borderRadius: 2,
-              background: "linear-gradient(135deg, #e7e1e6ff, #d3bdd4ff)",
               mt: 3,
+              background: "linear-gradient(135deg, #e7e1e6ff, #d3bdd4ff)",
             }}
           >
             <Typography variant="h6" gutterBottom>
               Bank Details
             </Typography>
 
-            <Box component="form" onSubmit={handleBankSubmit}>
-              <Grid container spacing={2}>
-                {[
-                  { label: "Bank Name", name: "bankName" },
-                  { label: "Account Holder Name", name: "accountHolderName" },
-                  { label: "Account Number", name: "accountNumber" },
-                  { label: "IFSC Code", name: "ifscCode" },
-                  { label: "Branch", name: "branch" },
-                  { label: "UPI ID", name: "upiId" },
-                ].map((field) => (
-                  <Grid item xs={12} sm={6} key={field.name}>
-                    <TextField
-                      fullWidth
-                      variant="outlined"
-                      label={field.label}
-                      name={field.name}
-                      value={bankInfo[field.name] || ""}
-                      onChange={handleBankChange}
-                    />
-                  </Grid>
-                ))}
-              </Grid>
-
-              {/* UPI QR Upload */}
-              <Box sx={{ mt: 2 }}>
-                <Typography variant="body1" fontWeight="bold">
-                  Upload UPI QR Code
-                </Typography>
-
-                <Button variant="outlined" component="label" sx={{ mt: 1 }}>
-                  Choose QR Image
-                  <input
-                    type="file"
-                    accept="image/*"
-                    hidden
-                    onChange={handleQrChange}
+            <Grid container spacing={2}>
+              {[
+                { label: "Bank Name", name: "bankName" },
+                { label: "Account Holder Name", name: "accountHolderName" },
+                { label: "Account Number", name: "accountNumber" },
+                { label: "IFSC Code", name: "ifscCode" },
+                { label: "Branch", name: "branch" },
+                { label: "UPI ID", name: "upiId" },
+              ].map((field) => (
+                <Grid item xs={12} sm={6} key={field.name}>
+                  <TextField
+                    fullWidth
+                    label={field.label}
+                    name={field.name}
+                    value={bankInfo[field.name] || ""}
+                    onChange={handleBankChange}
                   />
-                </Button>
+                </Grid>
+              ))}
+            </Grid>
 
-                {upiQrFile && (
-                  <Typography sx={{ mt: 1 }}>
-                    Selected: {upiQrFile.name}
-                  </Typography>
-                )}
-
-                <Box sx={{ textAlign: "right", mt: 2 }}>
-                  <Button type="submit" variant="contained" color="secondary">
-                    Save Bank Details
-                  </Button>
-                  <Button
-                    variant="contained"
-                    sx={{ ml: 2 }}
-                    color="success"
-                    onClick={handleQrUpload}
-                  >
-                    Upload QR
-                  </Button>
-                </Box>
-              </Box>
+            <Box sx={{ mt: 2, textAlign: "right" }}>
+              <Button variant="contained" onClick={handleBankSubmit}>
+                Save Bank Details
+              </Button>
             </Box>
           </Paper>
         </Box>
 
-        {/* -------- Right Side: Logo Upload -------- */}
+        {/* ---------------- RIGHT SIDE ---------------- */}
         <Box>
           <Paper
             elevation={3}
@@ -872,16 +790,13 @@ const CompanyDetails = () => {
             <Typography variant="h6" gutterBottom>
               Company Logo
             </Typography>
-            <Button
-              variant="outlined"
-              component="label"
-              sx={{ borderRadius: "50px" }}
-            >
+
+            <Button variant="outlined" component="label">
               Upload Logo
               <input
                 type="file"
-                accept="image/*"
                 hidden
+                accept="image/*"
                 onChange={handleLogoChange}
               />
             </Button>
@@ -892,12 +807,8 @@ const CompanyDetails = () => {
               </Typography>
             )}
 
-            <Box sx={{ textAlign: "right", mt: 2 }}>
-              <Button
-                variant="contained"
-                color="secondary"
-                onClick={handleLogoUpload}
-              >
+            <Box sx={{ mt: 2, textAlign: "right" }}>
+              <Button variant="contained" onClick={handleLogoUpload}>
                 Save Logo
               </Button>
             </Box>

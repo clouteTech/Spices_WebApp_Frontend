@@ -164,3 +164,84 @@
   border-radius: 8px;
   font-size: 14px;
 }
+
+/* ============================= */
+/* PrimeReact Filter Icon FIX */
+/* ============================= */
+
+/* Show filter icon button */
+.p-column-filter-menu-button {
+  display: inline-flex !important;
+  align-items: center;
+  justify-content: center;
+}
+
+/* Ensure icon is visible in dark header */
+.p-column-filter-menu-button .pi {
+  color: #ffffff !important;
+  font-size: 0.9rem;
+}
+/* ================================= */
+/* Move filter icon to RIGHT side */
+/* ================================= */
+
+/* Force header to full-width flex */
+.p-datatable-thead > tr > th .p-column-header-content {
+  display: flex !important;
+  align-items: center;
+  width: 100%;
+}
+
+
+.p-datatable-thead > tr > th .p-column-filter-menu-button {
+  margin-left: auto !important;
+}
+
+/* =============================== */
+/* PrimeReact Column Filter Styling */
+/* =============================== */
+
+/* Main filter popup container */
+.p-column-filter-overlay {
+  padding: 0.75rem 0.75rem 0.9rem;
+}
+
+/* Space between dropdowns & inputs */
+.p-column-filter-overlay .p-dropdown,
+.p-column-filter-overlay .p-inputtext {
+  margin-bottom: 0.6rem;
+}
+
+/* Match mode dropdown (Match Any / All) */
+.p-column-filter-matchmode-dropdown {
+  margin-bottom: 0.6rem;
+}
+
+/* Rule section spacing */
+.p-column-filter-constraints > div {
+  margin-bottom: 0.6rem;
+}
+
+/* Add Rule link spacing */
+.p-column-filter-add-rule {
+  margin: 0.4rem 0 0.6rem;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+}
+
+/* Footer buttons container */
+.p-column-filter-buttonbar {
+  padding-top: 0.6rem;
+  display: flex;
+  justify-content: space-between;
+}
+
+/* Clear / Apply buttons */
+.p-column-filter-buttonbar .p-button {
+  min-width: 80px;
+}
+
+.p-datatable-thead > tr > th:first-child .p-column-title {
+  margin-right: auto;
+}

@@ -12,3 +12,5 @@ export const updatePackageType = (data) => instance.post("/company/update/packag
 
 export const deletePackageType = (packageTypeById) =>
   instance.post("/company/delete/packagetype",packageTypeById);
+
+export const getPackageDropdown = () => instance.post("/company/packagedropdownlist",{});

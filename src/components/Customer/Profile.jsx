@@ -96,146 +96,335 @@
 
 // export default Profile;
 
+// import React, { useState } from "react";
+// import {
+//   Box,
+//   Card,
+//   CardContent,
+//   Typography,
+//   Avatar,
+//   TextField,
+//   Button,
+//   Grid,
+//   Divider,
+//   RadioGroup,
+//   FormControlLabel,
+//   Radio,
+// } from "@mui/material";
+// import PersonIcon from "@mui/icons-material/Person";
+
+// const CustomerProfile = () => {
+//   const [profile, setProfile] = useState({
+//     firstName: "Keerthana",
+//     lastName: "Gurumoorthy",
+//     gender: "",
+//     email: "keerthana@example.com",
+//     phone: "+91 95855 74201",
+//   });
+
+//   const handleChange = (e) => {
+//     setProfile({ ...profile, [e.target.name]: e.target.value });
+//   };
+
+//   return (
+//     <Grid container spacing={3} sx={{ mt: 2 }}>
+//       {/* Sidebar */}
+//       <Grid item xs={12} md={3}>
+//         <Card sx={{ p: 2 }}>
+//           <Box display="flex" flexDirection="column" alignItems="center">
+//             <Avatar sx={{ width: 64, height: 64, mb: 1 }}>
+//               <PersonIcon fontSize="large" />
+//             </Avatar>
+//             <Typography variant="h6">Hello, {profile.firstName}</Typography>
+//           </Box>
+
+//           <Divider sx={{ my: 2 }} />
+
+//           <Typography variant="subtitle1" sx={{ mb: 1 }}>
+//             Account Settings
+//           </Typography>
+//           <Typography color="primary">Profile Information</Typography>
+//           <Typography>Manage Addresses</Typography>
+//           <Typography>PAN Card Information</Typography>
+
+//           <Divider sx={{ my: 2 }} />
+
+//           <Typography variant="subtitle1" sx={{ mb: 1 }}>
+//             Payments
+//           </Typography>
+//           <Typography>Gift Cards</Typography>
+//           <Typography>Saved UPI</Typography>
+//           <Typography>Saved Cards</Typography>
+//         </Card>
+//       </Grid>
+
+//       {/* Profile Info Section */}
+//       <Grid item xs={12} md={9}>
+//         <Card>
+//           <CardContent>
+//             <Box display="flex" justifyContent="space-between" mb={2}>
+//               <Typography variant="h6">Personal Information</Typography>
+//               <Button variant="outlined" size="small">
+//                 Edit
+//               </Button>
+//             </Box>
+
+//             <Grid container spacing={2}>
+//               <Grid item xs={12} md={6}>
+//                 <TextField
+//                   fullWidth
+//                   label="First Name"
+//                   name="firstName"
+//                   value={profile.firstName}
+//                   onChange={handleChange}
+//                 />
+//               </Grid>
+//               <Grid item xs={12} md={6}>
+//                 <TextField
+//                   fullWidth
+//                   label="Last Name"
+//                   name="lastName"
+//                   value={profile.lastName}
+//                   onChange={handleChange}
+//                 />
+//               </Grid>
+
+//               <Grid item xs={12}>
+//                 <Typography variant="subtitle2">Your Gender</Typography>
+//                 <RadioGroup
+//                   row
+//                   name="gender"
+//                   value={profile.gender}
+//                   onChange={handleChange}
+//                 >
+//                   <FormControlLabel
+//                     value="Male"
+//                     control={<Radio />}
+//                     label="Male"
+//                   />
+//                   <FormControlLabel
+//                     value="Female"
+//                     control={<Radio />}
+//                     label="Female"
+//                   />
+//                 </RadioGroup>
+//               </Grid>
+
+//               <Grid item xs={12} md={6}>
+//                 <TextField
+//                   fullWidth
+//                   label="Email Address"
+//                   name="email"
+//                   value={profile.email}
+//                   onChange={handleChange}
+//                 />
+//               </Grid>
+
+//               <Grid item xs={12} md={6}>
+//                 <TextField
+//                   fullWidth
+//                   label="Mobile Number"
+//                   name="phone"
+//                   value={profile.phone}
+//                   onChange={handleChange}
+//                 />
+//               </Grid>
+//             </Grid>
+//           </CardContent>
+//         </Card>
+//       </Grid>
+//     </Grid>
+//   );
+// };
+
+// export default CustomerProfile;
+
 import React, { useState } from "react";
 import {
   Box,
   Card,
-  CardContent,
   Typography,
-  Avatar,
-  TextField,
+  IconButton,
   Button,
-  Grid,
   Divider,
-  RadioGroup,
+  TextField,
+  Checkbox,
   FormControlLabel,
-  Radio,
 } from "@mui/material";
-import PersonIcon from "@mui/icons-material/Person";
+import EditIcon from "@mui/icons-material/Edit";
+import InfoOutlinedIcon from "@mui/icons-material/InfoOutlined";
+import GlobalModal from "../../ui/GlobalModal"
 
 const CustomerProfile = () => {
-  const [profile, setProfile] = useState({
-    firstName: "Keerthana",
-    lastName: "Gurumoorthy",
-    gender: "",
-    email: "keerthana@example.com",
-    phone: "+91 95855 74201",
+  const user = {
+    name: "rahul v",
+    email: "cloute.rahulv@gmail.com",
+  };
+
+  const [addresses, setAddresses] = useState([]);
+  const [openAddressModal, setOpenAddressModal] = useState(false);
+
+  const [addressData, setAddressData] = useState({
+    isDefault: false,
+    firstName: "",
+    lastName: "",
+    address: "",
+    city: "",
+    state: "",
+    pinCode: "",
+    phone: "",
   });
 
   const handleChange = (e) => {
-    setProfile({ ...profile, [e.target.name]: e.target.value });
+    const { name, value, checked, type } = e.target;
+    setAddressData({
+      ...addressData,
+      [name]: type === "checkbox" ? checked : value,
+    });
+  };
+
+  const saveAddress = () => {
+    setAddresses([...addresses, addressData]);
+    setOpenAddressModal(false);
+    setAddressData({
+      isDefault: false,
+      firstName: "",
+      lastName: "",
+      address: "",
+      city: "",
+      state: "",
+      pinCode: "",
+      phone: "",
+    });
   };
 
   return (
-    <Grid container spacing={3} sx={{ mt: 2 }}>
-      {/* Sidebar */}
-      <Grid item xs={12} md={3}>
-        <Card sx={{ p: 2 }}>
-          <Box display="flex" flexDirection="column" alignItems="center">
-            <Avatar sx={{ width: 64, height: 64, mb: 1 }}>
-              <PersonIcon fontSize="large" />
-            </Avatar>
-            <Typography variant="h6">Hello, {profile.firstName}</Typography>
+    <Box sx={{ minHeight: "100vh", backgroundColor: "#f5f5f5", p: 4 }}>
+      <Typography variant="h5" fontWeight={600} mb={3}>
+        Profile
+      </Typography>
+
+      {/* Profile Card */}
+      <Card sx={{ p: 3, mb: 4 }}>
+        <Box display="flex" justifyContent="space-between">
+          <Typography variant="h6">{user.name}</Typography>
+          <IconButton size="small">
+            <EditIcon />
+          </IconButton>
+        </Box>
+
+        <Typography color="text.secondary" mt={2}>
+          Email
+        </Typography>
+        <Typography>{user.email}</Typography>
+      </Card>
+
+      {/* Address Card */}
+      <Card sx={{ p: 3 }}>
+        <Box display="flex" justifyContent="space-between" mb={2}>
+          <Typography variant="h6">Addresses</Typography>
+          <Button onClick={() => setOpenAddressModal(true)}>+ Add</Button>
+        </Box>
+
+        <Divider />
+
+        {addresses.length === 0 && (
+          <Box
+            sx={{
+              mt: 3,
+              p: 2,
+              border: "1px solid #e0e0e0",
+              borderRadius: 1,
+              display: "flex",
+              gap: 1,
+            }}
+          >
+            <InfoOutlinedIcon fontSize="small" />
+            <Typography>No addresses added</Typography>
+          </Box>
+        )}
+      </Card>
+
+      {/* ADD ADDRESS MODAL */}
+      <GlobalModal
+        open={openAddressModal}
+        onClose={() => setOpenAddressModal(false)}
+        title="Add address"
+      >
+        <Box display="flex" flexDirection="column" gap={2}>
+          <FormControlLabel
+            control={
+              <Checkbox
+                name="isDefault"
+                checked={addressData.isDefault}
+                onChange={handleChange}
+              />
+            }
+            label="This is my default address"
+          />
+
+          <Box display="flex" gap={2}>
+            <TextField
+              fullWidth
+              label="First name"
+              name="firstName"
+              value={addressData.firstName}
+              onChange={handleChange}
+            />
+            <TextField
+              fullWidth
+              label="Last name"
+              name="lastName"
+              value={addressData.lastName}
+              onChange={handleChange}
+            />
           </Box>
 
-          <Divider sx={{ my: 2 }} />
+          <TextField
+            label="Address"
+            name="address"
+            value={addressData.address}
+            onChange={handleChange}
+          />
 
-          <Typography variant="subtitle1" sx={{ mb: 1 }}>
-            Account Settings
-          </Typography>
-          <Typography color="primary">Profile Information</Typography>
-          <Typography>Manage Addresses</Typography>
-          <Typography>PAN Card Information</Typography>
+          <Box display="flex" gap={2}>
+            <TextField
+              fullWidth
+              label="City"
+              name="city"
+              value={addressData.city}
+              onChange={handleChange}
+            />
+            <TextField
+              fullWidth
+              label="State"
+              name="state"
+              value={addressData.state}
+              onChange={handleChange}
+            />
+            <TextField
+              fullWidth
+              label="PIN code"
+              name="pinCode"
+              value={addressData.pinCode}
+              onChange={handleChange}
+            />
+          </Box>
 
-          <Divider sx={{ my: 2 }} />
+          <TextField
+            label="Phone"
+            name="phone"
+            value={addressData.phone}
+            onChange={handleChange}
+          />
 
-          <Typography variant="subtitle1" sx={{ mb: 1 }}>
-            Payments
-          </Typography>
-          <Typography>Gift Cards</Typography>
-          <Typography>Saved UPI</Typography>
-          <Typography>Saved Cards</Typography>
-        </Card>
-      </Grid>
-
-      {/* Profile Info Section */}
-      <Grid item xs={12} md={9}>
-        <Card>
-          <CardContent>
-            <Box display="flex" justifyContent="space-between" mb={2}>
-              <Typography variant="h6">Personal Information</Typography>
-              <Button variant="outlined" size="small">
-                Edit
-              </Button>
-            </Box>
-
-            <Grid container spacing={2}>
-              <Grid item xs={12} md={6}>
-                <TextField
-                  fullWidth
-                  label="First Name"
-                  name="firstName"
-                  value={profile.firstName}
-                  onChange={handleChange}
-                />
-              </Grid>
-              <Grid item xs={12} md={6}>
-                <TextField
-                  fullWidth
-                  label="Last Name"
-                  name="lastName"
-                  value={profile.lastName}
-                  onChange={handleChange}
-                />
-              </Grid>
-
-              <Grid item xs={12}>
-                <Typography variant="subtitle2">Your Gender</Typography>
-                <RadioGroup
-                  row
-                  name="gender"
-                  value={profile.gender}
-                  onChange={handleChange}
-                >
-                  <FormControlLabel
-                    value="Male"
-                    control={<Radio />}
-                    label="Male"
-                  />
-                  <FormControlLabel
-                    value="Female"
-                    control={<Radio />}
-                    label="Female"
-                  />
-                </RadioGroup>
-              </Grid>
-
-              <Grid item xs={12} md={6}>
-                <TextField
-                  fullWidth
-                  label="Email Address"
-                  name="email"
-                  value={profile.email}
-                  onChange={handleChange}
-                />
-              </Grid>
-
-              <Grid item xs={12} md={6}>
-                <TextField
-                  fullWidth
-                  label="Mobile Number"
-                  name="phone"
-                  value={profile.phone}
-                  onChange={handleChange}
-                />
-              </Grid>
-            </Grid>
-          </CardContent>
-        </Card>
-      </Grid>
-    </Grid>
+          <Button variant="contained" onClick={saveAddress} sx={{ mt: 2 }}>
+            Save Address
+          </Button>
+        </Box>
+      </GlobalModal>
+    </Box>
   );
 };
 
 export default CustomerProfile;
-

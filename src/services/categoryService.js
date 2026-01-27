@@ -1,7 +1,7 @@
 import instance from "./api";
 
-export const getCategoryList = (params) =>
-  instance.post("/company/get/categorylist", params);
+export const getCategoryList = (payload) =>
+  instance.post("/company/get/categorylist", payload);
 
 export const getCategoriesById = (categoryId) =>
   instance.post(`/company/get/category`, { categoryId });
@@ -9,8 +9,8 @@ export const getCategoriesById = (categoryId) =>
 export const addCategory = (data) =>
   instance.post("/company/add/category", data);
 
-export const updateCategory = (categoryId, data) =>
-  instance.post(`/company/update/category`, { categoryId, ...data });
+export const updateCategory = (data) =>
+  instance.post(`/company/update/category`, data);
 
 export const deleteCategory = (categoryId) =>
   instance.post(`/company/delete/category`, { categoryId });

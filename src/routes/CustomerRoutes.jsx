@@ -36,9 +36,9 @@ const CustomerRoutes = () => {
           <Route
             path="/profile"
             element={
-              <PrivateRoute>
+              <PublicRoute>
                 <Profile />
-              </PrivateRoute>
+              </PublicRoute>
             }
           />
         </Routes>

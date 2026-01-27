@@ -11,6 +11,7 @@ import SizeMaster from "../components/Admin/productManagement/SizeMaster";
 import CategoryMaster from "../components/Admin/productManagement/CategoryMaster";
 import ProductPrice from "../components/Admin/productManagement/ProductPrice";
 import PackageType from "../components/Admin/productManagement/PackageType";
+import BatchDetails from "../components/Admin/productManagement/BatchDetails";
 import adminTheme from "../theme/AdminTheme";
 import { ThemeProvider } from "@emotion/react";
 import { CssBaseline } from "@mui/material";
@@ -47,6 +48,7 @@ const AdminRoutes = () => {
             <Route path="CategoryMaster" element={<CategoryMaster />} />
             <Route path="orders" element={<OrderManagement />} />
             <Route path="BatchMaster" element={<BatchMaster/>}/>
+            <Route path="BatchDetails" element={<BatchDetails/>}/>
             <Route path="company/:companyId" element={<CompanyDetails />} />
           </Route>
         </Routes>

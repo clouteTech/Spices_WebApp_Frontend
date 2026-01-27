@@ -281,7 +281,8 @@ import {
   Inventory,
   ChevronLeft,
 } from "@mui/icons-material";
-
+import MoveToInboxOutlinedIcon from "@mui/icons-material/MoveToInboxOutlined";
+import PostAddOutlinedIcon from "@mui/icons-material/PostAddOutlined";
 import BackpackIcon from "@mui/icons-material/BackpackOutlined";
 import LocalOfferIcon from "@mui/icons-material/LocalOfferOutlined";
 import { Link } from "react-router-dom";
@@ -293,6 +294,7 @@ export const collapsedWidth = 70;
 const Sidebar = ({ open, setOpen, mobileOpen, setMobileOpen }) => {
   const [openProduct, setOpenProduct] = useState(false);
   const [openStock, setOpenStock] = useState(false);
+  const [openInward,setOpenInward]= useState(false);
   const [openOrder, setOpenOrder] = useState(false);
 
   const menuItemStyle = {
@@ -467,14 +469,70 @@ const Sidebar = ({ open, setOpen, mobileOpen, setMobileOpen }) => {
           <ListItemIcon sx={iconStyle}>
             <ShoppingCartOutlined />
           </ListItemIcon>
+
           {open && <ListItemText primary="Stock Management" />}
           {open && (openStock ? <ExpandLess /> : <ExpandMore />)}
+        </ListItemButton>
+
+        <Collapse in={openStock} timeout="auto" unmountOnExit>
+          <List disablePadding>
+            {/* INWARD */}
+            <ListItemButton
+              sx={{ ...menuItemStyle, pl: 5 }}
+              onClick={() => setOpenInward(!openInward)}
+            >
+              <ListItemIcon sx={iconStyle}>
+                <MoveToInboxOutlinedIcon />
+              </ListItemIcon>
+
+              {open && <ListItemText primary="Inward" />}
+              {open && (openInward ? <ExpandLess /> : <ExpandMore />)}
+            </ListItemButton>
+
+            <Collapse in={openInward} timeout="auto" unmountOnExit>
+              <List disablePadding>
+                <ListItemButton
+                  component={Link}
+                  to="/admin/BatchMaster"
+                  sx={{ ...menuItemStyle, pl: 8 }}
+                >
+                  <ListItemIcon sx={iconStyle}>
+                    <PostAddOutlinedIcon />
+                  </ListItemIcon>
+                  {open && <ListItemText primary="Add Batch" />}
+                </ListItemButton>
+
+                <ListItemButton
+                  component={Link}
+                  to="/admin/BatchDetails"
+                  sx={{ ...menuItemStyle, pl: 8 }}
+                >
+                  <ListItemIcon sx={iconStyle}>
+                    <Inventory2Outlined />
+                  </ListItemIcon>
+                  {open && <ListItemText primary="Batch Details" />}
+                </ListItemButton>
+              </List>
+            </Collapse>
+          </List>
+        </Collapse>
+
+        {/* <ListItemButton
+          sx={menuItemStyle}
+          onClick={() => setOpenStock(!openStock)}
+        >
+          <ListItemIcon sx={iconStyle}>
+            <ShoppingCartOutlined />
+            {open && <ListItemText primary="Inward" />}
+            {open && (openStock ? <ExpandLess /> : <ExpandMore />)}
+          </ListItemIcon>
         </ListItemButton>
 
         <Collapse in={openStock}>
           <List disablePadding>
             {[
-              ["Batch Master", "/admin/BatchMaster", <Inventory2Outlined />],
+              ["Add Batch", "/admin/BatchMaster", <Inventory2Outlined />],
+              ["Batch Details", "/admin/BatchDetails", <Inventory2Outlined />],
             ].map(([label, to, icon], i) => (
               <ListItemButton
                 key={i}
@@ -487,7 +545,7 @@ const Sidebar = ({ open, setOpen, mobileOpen, setMobileOpen }) => {
               </ListItemButton>
             ))}
           </List>
-        </Collapse>
+        </Collapse> */}
 
         {/* ORDERS */}
         {open && (
