@@ -46,7 +46,8 @@ const BatchMaster = () => {
     }
 
     try {
-      const res = await getProductByShelfLife(batchInfo.shelfLife);
+      const shelfLife = Number(batchInfo.shelfLife);
+      const res = await getProductByShelfLife(shelfLife);
 
       const list = res?.data?.data || [];
 
@@ -150,14 +151,15 @@ const BatchMaster = () => {
     }
   };
 
-  // Table columns
   const columns = [
     {
+      field: "id",
       header: "S.No",
       body: (_, options) => options.rowIndex + 1,
       style: { width: "70px" },
     },
     {
+      field: "productId",
       header: "Product Name",
       body: (row, options) => (
         <TextField
@@ -171,11 +173,14 @@ const BatchMaster = () => {
               "✅ Product selected:",
               productId,
               "rowIndex:",
-              options.rowIndex
+              options.rowIndex,
             );
 
             try {
-              const res = await getPackageTypeByProduct(productId,batchInfo.shelfLife);
+              const res = await getPackageTypeByProduct(
+                productId,
+                batchInfo.shelfLife,
+              );
               const packageTypes = res?.data?.data || [];
 
               setBatchRows((prev) => {
@@ -192,7 +197,7 @@ const BatchMaster = () => {
 
                 console.log(
                   "🧾 Row after product select:",
-                  updated[options.rowIndex]
+                  updated[options.rowIndex],
                 );
 
                 return updated;
@@ -211,8 +216,8 @@ const BatchMaster = () => {
         </TextField>
       ),
     },
-
     {
+      field: "packageTypeId",
       header: "Package Type",
       body: (row) => (
         <TextField
@@ -227,7 +232,11 @@ const BatchMaster = () => {
 
             try {
               // 🔥 Fetch sizes ONLY when package is selected
-              const res = await getSizeByPackage(productId, packageTypeId,batchInfo.shelfLife);
+              const res = await getSizeByPackage(
+                productId,
+                packageTypeId,
+                batchInfo.shelfLife,
+              );
               const list = res?.data?.data || [];
 
               // ✅ Normalize size data
@@ -248,8 +257,8 @@ const BatchMaster = () => {
                         productPriceId: null, // reset size
                         sizeTypes,
                       }
-                    : r
-                )
+                    : r,
+                ),
               );
             } catch (error) {
               console.error("Failed to load sizes", error);
@@ -266,6 +275,7 @@ const BatchMaster = () => {
       ),
     },
     {
+      field: "sizeId",
       header: "Size",
       body: (row) => (
         <TextField
@@ -323,7 +333,7 @@ const BatchMaster = () => {
                 row.productId,
                 row.packageTypeId,
                 sizeId,
-                batchInfo.shelfLife
+                batchInfo.shelfLife,
               );
 
               const productPriceId = res?.data?.data?.priceId;
@@ -340,8 +350,8 @@ const BatchMaster = () => {
                         sizeId,
                         productPriceId, // 🔑 RESULT OF ALL 3 IDS
                       }
-                    : r
-                )
+                    : r,
+                ),
               );
             } catch (error) {
               console.error("❌ Failed to fetch product price", error);
@@ -357,6 +367,7 @@ const BatchMaster = () => {
       ),
     },
     {
+      field: "quantity",
       header: "Quantity",
       body: (row, options) => (
         <TextField
@@ -374,47 +385,273 @@ const BatchMaster = () => {
         />
       ),
     },
-    // {
-    //   header: "Mfg Date",
-    //   body: (row) => (
-    //     <TextField
-    //       type="date"
-    //       size="small"
-    //       value={row.manufacturedDate || ""}
-    //       onChange={(e) => {
-    //         const value = e.target.value;
-
-    //         setBatchRows((prev) =>
-    //           prev.map((r) =>
-    //             r.id === row.id ? { ...r, manufacturedDate: value } : r
-    //           )
-    //         );
-    //       }}
-    //       InputLabelProps={{ shrink: true }}
-    //     />
-    //   ),
-    // },
-    // {
-    //   header: "Expiry Date",
-    //   body: (row, options) => (
-    //     <TextField
-    //       type="date"
-    //       size="small"
-    //       value={row.expiryDate || ""}
-    //       onChange={(e) => {
-    //         const value = e.target.value;
-
-    //         setBatchRows((prev) =>
-    //           prev.map((r) =>
-    //             r.id === row.id ? { ...r, expiryDate: value } : r
-    //           )
-    //         );
-    //       }}
-    //       InputLabelProps={{ shrink: true }}
-    //     />
-    //   ),
-    // },
   ];
+
+  // // Table columns
+  // const columns = [
+  //   {
+  //     header: "S.No",
+  //     body: (_, options) => options.rowIndex + 1,
+  //     style: { width: "70px" },
+  //   },
+  //   {
+  //     header: "Product Name",
+  //     body: (row, options) => (
+  //       <TextField
+  //         select
+  //         size="small"
+  //         value={row.productId != null ? String(row.productId) : ""}
+  //         onChange={async (e) => {
+  //           const productId = Number(e.target.value);
+
+  //           console.log(
+  //             "✅ Product selected:",
+  //             productId,
+  //             "rowIndex:",
+  //             options.rowIndex
+  //           );
+
+  //           try {
+  //             const res = await getPackageTypeByProduct(productId,batchInfo.shelfLife);
+  //             const packageTypes = res?.data?.data || [];
+
+  //             setBatchRows((prev) => {
+  //               const updated = [...prev];
+  //               updated[options.rowIndex] = {
+  //                 ...updated[options.rowIndex],
+  //                 productId,
+  //                 packageTypeId: "",
+  //                 sizeId: "",
+  //                 productPriceId: null,
+  //                 packageTypes,
+  //                 sizeTypes: [],
+  //               };
+
+  //               console.log(
+  //                 "🧾 Row after product select:",
+  //                 updated[options.rowIndex]
+  //               );
+
+  //               return updated;
+  //             });
+  //           } catch (err) {
+  //             console.error("Failed to load package types", err);
+  //           }
+  //         }}
+  //         sx={{ width: 260 }}
+  //       >
+  //         {productsList.map((p) => (
+  //           <MenuItem key={p.productId} value={String(p.productId)}>
+  //             {p.combinedLabel}
+  //           </MenuItem>
+  //         ))}
+  //       </TextField>
+  //     ),
+  //   },
+
+  //   {
+  //     header: "Package Type",
+  //     body: (row) => (
+  //       <TextField
+  //         select
+  //         size="small"
+  //         sx={{ width: 180 }}
+  //         value={row.packageTypeId != null ? String(row.packageTypeId) : ""}
+  //         disabled={!row.productId}
+  //         onChange={async (e) => {
+  //           const packageTypeId = Number(e.target.value);
+  //           const productId = row.productId;
+
+  //           try {
+  //             // 🔥 Fetch sizes ONLY when package is selected
+  //             const res = await getSizeByPackage(productId, packageTypeId,batchInfo.shelfLife);
+  //             const list = res?.data?.data || [];
+
+  //             // ✅ Normalize size data
+  //             const sizeTypes = list.map((s) => ({
+  //               sizeId: s.sizeId ?? s.id, // 🔥 FIX
+  //               label: `${s.sizeType} - ${s.size}`,
+  //               productPriceId: s.productPriceId,
+  //             }));
+
+  //             // ✅ SAFE UPDATE USING row.id
+  //             setBatchRows((prev) =>
+  //               prev.map((r) =>
+  //                 r.id === row.id
+  //                   ? {
+  //                       ...r,
+  //                       packageTypeId,
+  //                       sizeId: "",
+  //                       productPriceId: null, // reset size
+  //                       sizeTypes,
+  //                     }
+  //                   : r
+  //               )
+  //             );
+  //           } catch (error) {
+  //             console.error("Failed to load sizes", error);
+  //           }
+  //         }}
+  //       >
+  //         {row.packageTypes.map((pkg) => (
+  //           <MenuItem key={pkg.packageTypeId} value={String(pkg.packageTypeId)}>
+  //             {/* ✅ SAFE LABEL */}
+  //             {pkg.type || pkg.packageType}
+  //           </MenuItem>
+  //         ))}
+  //       </TextField>
+  //     ),
+  //   },
+  //   {
+  //     header: "Size",
+  //     body: (row) => (
+  //       <TextField
+  //         select
+  //         size="small"
+  //         sx={{ width: 160 }}
+  //         disabled={!row.packageTypeId || row.sizeTypes.length === 0}
+  //         value={row.sizeId || ""} // ✅ string only
+  //         // onChange={async (e) => {
+  //         //   const sizeId = e.target.value; // ✅ convert only for API
+
+  //         //   console.log("✅ Size selected (number):", sizeId);
+
+  //         //   if (!sizeId) return; // safety
+
+  //         //   try {
+  //         //     const res = await getProductPriceBySize(
+  //         //       row.productId,
+  //         //       row.packageTypeId,
+  //         //       sizeId
+  //         //     );
+
+  //         //     const productPriceId = res?.data?.data?.productPriceId;
+
+  //         //     console.log("🔥 productPriceId from API:", productPriceId);
+
+  //         //     setBatchRows((prev) =>
+  //         //       prev.map((r) =>
+  //         //         r.id === row.id
+  //         //           ? {
+  //         //               ...r,
+  //         //               sizeId: sizeId, // ✅ STORE STRING
+  //         //               productPriceId, // ✅ STORE NUMBER
+  //         //             }
+  //         //           : r
+  //         //       )
+  //         //     );
+  //         //   } catch (error) {
+  //         //     console.error("❌ Failed to fetch product price", error);
+  //         //   }
+  //         // }}
+
+  //         onChange={async (e) => {
+  //           const sizeId = Number(e.target.value);
+
+  //           // safety check
+  //           if (!row.productId || !row.packageTypeId || !sizeId) {
+  //             console.warn("Missing IDs for price fetch");
+  //             return;
+  //           }
+
+  //           try {
+  //             // 🔥 FINAL PRICE CALL
+  //             const res = await getProductPriceBySize(
+  //               row.productId,
+  //               row.packageTypeId,
+  //               sizeId,
+  //               batchInfo.shelfLife
+  //             );
+
+  //             const productPriceId = res?.data?.data?.priceId;
+
+  //             console.log("🔥 ProductPriceId:", productPriceId);
+
+  //             if (!productPriceId) return;
+
+  //             setBatchRows((prev) =>
+  //               prev.map((r) =>
+  //                 r.id === row.id
+  //                   ? {
+  //                       ...r,
+  //                       sizeId,
+  //                       productPriceId, // 🔑 RESULT OF ALL 3 IDS
+  //                     }
+  //                   : r
+  //               )
+  //             );
+  //           } catch (error) {
+  //             console.error("❌ Failed to fetch product price", error);
+  //           }
+  //         }}
+  //       >
+  //         {row.sizeTypes.map((s) => (
+  //           <MenuItem key={s.sizeId} value={String(s.sizeId)}>
+  //             {s.label}
+  //           </MenuItem>
+  //         ))}
+  //       </TextField>
+  //     ),
+  //   },
+  //   {
+  //     header: "Quantity",
+  //     body: (row, options) => (
+  //       <TextField
+  //         type="number"
+  //         size="small"
+  //         value={row.quantity ?? ""}
+  //         onChange={(e) => {
+  //           const updated = [...batchRows];
+  //           updated[options.rowIndex] = {
+  //             ...updated[options.rowIndex],
+  //             quantity: e.target.value,
+  //           };
+  //           setBatchRows(updated);
+  //         }}
+  //       />
+  //     ),
+  //   },
+  //   // {
+  //   //   header: "Mfg Date",
+  //   //   body: (row) => (
+  //   //     <TextField
+  //   //       type="date"
+  //   //       size="small"
+  //   //       value={row.manufacturedDate || ""}
+  //   //       onChange={(e) => {
+  //   //         const value = e.target.value;
+
+  //   //         setBatchRows((prev) =>
+  //   //           prev.map((r) =>
+  //   //             r.id === row.id ? { ...r, manufacturedDate: value } : r
+  //   //           )
+  //   //         );
+  //   //       }}
+  //   //       InputLabelProps={{ shrink: true }}
+  //   //     />
+  //   //   ),
+  //   // },
+  //   // {
+  //   //   header: "Expiry Date",
+  //   //   body: (row, options) => (
+  //   //     <TextField
+  //   //       type="date"
+  //   //       size="small"
+  //   //       value={row.expiryDate || ""}
+  //   //       onChange={(e) => {
+  //   //         const value = e.target.value;
+
+  //   //         setBatchRows((prev) =>
+  //   //           prev.map((r) =>
+  //   //             r.id === row.id ? { ...r, expiryDate: value } : r
+  //   //           )
+  //   //         );
+  //   //       }}
+  //   //       InputLabelProps={{ shrink: true }}
+  //   //     />
+  //   //   ),
+  //   // },
+  // ];
 
   return (
     <Box sx={{ p: 4 }}>
@@ -461,7 +698,7 @@ const BatchMaster = () => {
                     shelfLife,
                     expiryDate: calculateExpiryDate(
                       prev.manufacturedDate,
-                      shelfLife
+                      shelfLife,
                     ),
                   }));
                 }}
@@ -560,6 +797,7 @@ const BatchMaster = () => {
         columns={columns}
         loading={false}
         enablePagination={false}
+        pagination={{ size: 10, first: 0 }}
       />
       <Stack direction="row" justifyContent="flex-end" mt={3}>
         <Button

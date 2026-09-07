@@ -285,6 +285,9 @@ import MoveToInboxOutlinedIcon from "@mui/icons-material/MoveToInboxOutlined";
 import PostAddOutlinedIcon from "@mui/icons-material/PostAddOutlined";
 import BackpackIcon from "@mui/icons-material/BackpackOutlined";
 import LocalOfferIcon from "@mui/icons-material/LocalOfferOutlined";
+import WarehouseOutlinedIcon from "@mui/icons-material/WarehouseOutlined";
+import ReceiptOutlinedIcon from "@mui/icons-material/ReceiptOutlined";
+import StreamIcon from "@mui/icons-material/Stream";
 import { Link } from "react-router-dom";
 import logo1 from "../../assets/logo1.png";
 
@@ -294,8 +297,10 @@ export const collapsedWidth = 70;
 const Sidebar = ({ open, setOpen, mobileOpen, setMobileOpen }) => {
   const [openProduct, setOpenProduct] = useState(false);
   const [openStock, setOpenStock] = useState(false);
-  const [openInward,setOpenInward]= useState(false);
+  const [openInward, setOpenInward] = useState(false);
   const [openOrder, setOpenOrder] = useState(false);
+  const [openUser,setOpenUser] = useState(false);
+  const [stockMovement, setStockMovement] = useState(false);
 
   const menuItemStyle = {
     py: 1,
@@ -453,7 +458,7 @@ const Sidebar = ({ open, setOpen, mobileOpen, setMobileOpen }) => {
           </List>
         </Collapse>
 
-        {/* STOCK */}
+        {/* STOCK TITLE */}
         {open && (
           <Typography
             sx={{ px: 3, py: 1, fontSize: 14, opacity: 0.6, color: "#e5e7eb" }}
@@ -462,6 +467,7 @@ const Sidebar = ({ open, setOpen, mobileOpen, setMobileOpen }) => {
           </Typography>
         )}
 
+        {/* STOCK MAIN */}
         <ListItemButton
           sx={menuItemStyle}
           onClick={() => setOpenStock(!openStock)}
@@ -470,13 +476,15 @@ const Sidebar = ({ open, setOpen, mobileOpen, setMobileOpen }) => {
             <ShoppingCartOutlined />
           </ListItemIcon>
 
-          {open && <ListItemText primary="Stock Management" />}
+          {open && <ListItemText primary="Stock" />}
           {open && (openStock ? <ExpandLess /> : <ExpandMore />)}
         </ListItemButton>
 
+        {/* 🔥 EVERYTHING INSIDE THIS COLLAPSE */}
         <Collapse in={openStock} timeout="auto" unmountOnExit>
           <List disablePadding>
-            {/* INWARD */}
+            {/* ✅ Stock Movement (NOW CORRECTLY INSIDE) */}
+            {/* ✅ INWARD */}
             <ListItemButton
               sx={{ ...menuItemStyle, pl: 5 }}
               onClick={() => setOpenInward(!openInward)}
@@ -489,6 +497,7 @@ const Sidebar = ({ open, setOpen, mobileOpen, setMobileOpen }) => {
               {open && (openInward ? <ExpandLess /> : <ExpandMore />)}
             </ListItemButton>
 
+            {/* INWARD CHILDREN */}
             <Collapse in={openInward} timeout="auto" unmountOnExit>
               <List disablePadding>
                 <ListItemButton
@@ -514,6 +523,26 @@ const Sidebar = ({ open, setOpen, mobileOpen, setMobileOpen }) => {
                 </ListItemButton>
               </List>
             </Collapse>
+            <ListItemButton
+              component={Link}
+              to="/admin/currentStock"
+              sx={{ ...menuItemStyle, pl: 5 }}
+            >
+              <ListItemIcon sx={iconStyle}>
+                <WarehouseOutlinedIcon />
+              </ListItemIcon>
+              {open && <ListItemText primary="Current Stock" />}
+            </ListItemButton>
+            <ListItemButton
+              component={Link}
+              to="/admin/StockMovement"
+              sx={{ ...menuItemStyle, pl: 5 }}
+            >
+              <ListItemIcon sx={iconStyle}>
+                <WarehouseOutlinedIcon />
+              </ListItemIcon>
+              {open && <ListItemText primary="Stock Movement" />}
+            </ListItemButton>
           </List>
         </Collapse>
 
@@ -578,6 +607,59 @@ const Sidebar = ({ open, setOpen, mobileOpen, setMobileOpen }) => {
                 <ShoppingBagOutlined />
               </ListItemIcon>
               {open && <ListItemText primary="Orders" />}
+            </ListItemButton>
+            <ListItemButton
+              component={Link}
+              to="/admin/invoiceManagement"
+              sx={{ ...menuItemStyle, pl: 5 }}
+            >
+              <ListItemIcon sx={iconStyle}>
+                <ReceiptOutlinedIcon />
+              </ListItemIcon>
+              {open && <ListItemText primary="Invoice Management" />}
+            </ListItemButton>
+          </List>
+        </Collapse>
+        {open && (
+          <Typography
+            sx={{ px: 3, py: 1, fontSize: 14, opacity: 0.6, color: "#e5e7eb" }}
+          >
+            USERS
+          </Typography>
+        )}
+
+        <ListItemButton
+          sx={menuItemStyle}
+          onClick={() => setOpenUser(!openUser)}
+        >
+          <ListItemIcon sx={iconStyle}>
+            <ShoppingCartOutlined />
+          </ListItemIcon>
+          {open && <ListItemText primary="User Management" />}
+          {open && (openUser ? <ExpandLess /> : <ExpandMore />)}
+        </ListItemButton>
+
+        <Collapse in={openUser}>
+          <List disablePadding>
+            <ListItemButton
+              component={Link}
+              to="/admin/companyUser"
+              sx={{ ...menuItemStyle, pl: 5 }}
+            >
+              <ListItemIcon sx={iconStyle}>
+                <ShoppingBagOutlined />
+              </ListItemIcon>
+              {open && <ListItemText primary="Company Users" />}
+            </ListItemButton>
+            <ListItemButton
+              component={Link}
+              to="/admin/customerUser"
+              sx={{ ...menuItemStyle, pl: 5 }}
+            >
+              <ListItemIcon sx={iconStyle}>
+                <ReceiptOutlinedIcon />
+              </ListItemIcon>
+              {open && <ListItemText primary="Customers" />}
             </ListItemButton>
           </List>
         </Collapse>

@@ -1,13 +1,14 @@
 import React, { useState } from "react";
 import { useParams } from "react-router-dom";
 import { Tabs, Tab, Box, Typography } from "@mui/material";
-import Spices from "../../Data/Spices";
+// import Spices from "../../Data/Spices";
 
-const ProductTabs = () => {
+const ProductTabs = ({product}) => {
   const [tabIndex, setTabIndex] = useState(0);
   const { id } = useParams();
+  if (!product) return null;
 
-  const product = Spices.find((item) => item.id === parseInt(id));
+  // const product = Spices.find((item) => item.id === parseInt(id));
 
   const handleChange = (event, newValue) => {
     setTabIndex(newValue);
@@ -51,7 +52,7 @@ const ProductTabs = () => {
           )}
           {tabIndex === 3 && (
             <Typography variant="body1">
-              Add to tea,sprinkle on desserts.
+              {product.howToUse}
             </Typography>
           )}
         </Box>

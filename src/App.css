@@ -4,9 +4,11 @@
   box-sizing: border-box;
 }
 
+.card {
+  overflow-x: hidden !important;
+}
 
-
-
-
-
+.p-datatable-wrapper {
+  overflow-x: auto !important;
+}
 

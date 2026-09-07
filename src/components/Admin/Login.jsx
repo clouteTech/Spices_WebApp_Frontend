@@ -13,6 +13,7 @@ import { postUserLogin } from "../../services/auth-service";
 import { useUser } from "../../context/UserContext";
 
 const Login = () => {
+  const { login } = useUser();
   const [formData, setFormData] = useState({
     email: "",
     password: "",
@@ -27,61 +28,83 @@ const Login = () => {
     });
   };
 
+  // const handleLogin = async (e) => {
+  //   e.preventDefault();
+  //   // const adminUser={
+  //   //   email:"admin@123",
+  //   //   password:"admin123",
+  //   //   role:"admin",
+  //   // };
+  //   // if(email===adminUser.email&& password===adminUser.password){
+  //   //   localStorage.setItem("role","admin");
+  //   //   toast.success("Admin Loggedin Successfully");
+  //   //   navigate
+  //   // }else{
+  //   //   toast.error("Invalid admin Information");
+  //   // }
+  //   //   try {
+  //   //     const response = await postUserLogin(formData);
+  //   //     if (response.data.userType === "Root_User") {
+  //   //       setRole("admin");
+  //   //       setIsAuthenticated(true);
+  //   //       sessionStorage.setItem("role", "admin");
+  //   //       sessionStorage.setItem("isAuthenticated", "true");
+  //   //       sessionStorage.setItem("token", response.data.token);
+  //   //       document.cookie = `token=${encodeURIComponent(
+  //   //         response.data.token
+  //   //       )}; path=/;`;
+  //   //       console.log("API Response:", response.data);
+  //   //       toast.success("Admin Logged in Successfully");
+  //   //       navigate("/admin/dashboard");
+  //   //     } else {
+  //   //       toast.error("Invalid Admin Credentials");
+  //   //     }
+  //   //   } catch (error) {
+  //   //     console.error(error);
+  //   //     toast.error("Login failed");
+  //   //   }
+  //   // };
+
+  //   // useEffect(() => {
+  //   //   document.cookie = "token=";
+  //   // }, []);
+
+  //   try {
+  //     const response = await postUserLogin(formData);
+  //     console.log("Full login response:", response);
+
+  //     const userData = response.data;
+  //     console.log("userData:", userData);
+
+  //     if (userData?.userType === "Root_User") {
+  //       console.log("checking response");
+  //       setRole("admin");
+  //       setIsAuthenticated(true);
+  //       sessionStorage.setItem("role", "admin");
+  //       sessionStorage.setItem("isAuthenticated", "true");
+  //       sessionStorage.setItem("token", userData.token);
+
+  //       toast.success("Admin Logged in Successfully");
+  //       navigate("/admin/dashboard");
+  //     } else {
+  //       toast.error("Invalid Admin Credentials");
+  //     }
+  //   } catch (error) {
+  //     console.error("Login API Error:", error);
+  //     toast.error("Login failed");
+  //   }
+  // };
+
   const handleLogin = async (e) => {
     e.preventDefault();
-    // const adminUser={
-    //   email:"admin@123",
-    //   password:"admin123",
-    //   role:"admin",
-    // };
-    // if(email===adminUser.email&& password===adminUser.password){
-    //   localStorage.setItem("role","admin");
-    //   toast.success("Admin Loggedin Successfully");
-    //   navigate
-    // }else{
-    //   toast.error("Invalid admin Information");
-    // }
-    //   try {
-    //     const response = await postUserLogin(formData);
-    //     if (response.data.userType === "Root_User") {
-    //       setRole("admin");
-    //       setIsAuthenticated(true);
-    //       sessionStorage.setItem("role", "admin");
-    //       sessionStorage.setItem("isAuthenticated", "true");
-    //       sessionStorage.setItem("token", response.data.token);
-    //       document.cookie = `token=${encodeURIComponent(
-    //         response.data.token
-    //       )}; path=/;`;
-    //       console.log("API Response:", response.data);
-    //       toast.success("Admin Logged in Successfully");
-    //       navigate("/admin/dashboard");
-    //     } else {
-    //       toast.error("Invalid Admin Credentials");
-    //     }
-    //   } catch (error) {
-    //     console.error(error);
-    //     toast.error("Login failed");
-    //   }
-    // };
-
-    // useEffect(() => {
-    //   document.cookie = "token=";
-    // }, []);
 
     try {
       const response = await postUserLogin(formData);
-      console.log("Full login response:", response);
-
       const userData = response.data;
-      console.log("userData:", userData);
 
       if (userData?.userType === "Root_User") {
-        console.log("checking response");
-        setRole("admin");
-        setIsAuthenticated(true);
-        sessionStorage.setItem("role", "admin");
-        sessionStorage.setItem("isAuthenticated", "true");
-        sessionStorage.setItem("token", userData.token);
+        // 🔑 ONE LINE DOES EVERYTHING
+        login("admin", userData.token);
 
         toast.success("Admin Logged in Successfully");
         navigate("/admin/dashboard");
@@ -274,5 +297,3 @@ export default Login;
 // };
 
 // export default Login;
-
-

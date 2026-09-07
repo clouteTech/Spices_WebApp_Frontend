@@ -16,6 +16,7 @@ import MoreVertIcon from "@mui/icons-material/MoreVert";
 import BorderColorTwoToneIcon from "@mui/icons-material/BorderColorTwoTone";
 import DeleteOutlineTwoToneIcon from "@mui/icons-material/DeleteOutlineTwoTone";
 import CheckCircleOutlineRoundedIcon from "@mui/icons-material/CheckCircleOutlineRounded";
+import ClearOutlinedIcon from "@mui/icons-material/ClearOutlined";
 import {
   addProductPrice,
   getProductPrice,
@@ -25,16 +26,41 @@ import {
   deleteProductPrice,
 } from "../../../services/priceService";
 import {
-  uploadProductImages,
-  getProductImages,
-  setPrimaryImage,
-  deleteProductImage,
-} from "../../../services/imageService";
+  uploadProductPriceImages,
+  getProductPriceImages,
+  setPrimaryPriceImage,
+  deleteProductPriceImage,
+} from "../../../services/priceImageService";
+import {
+  DndContext,
+  closestCenter,
+  PointerSensor,
+  useSensor,
+  useSensors,
+} from "@dnd-kit/core";
+import {
+  SortableContext,
+  useSortable,
+  arrayMove,
+  rectSortingStrategy,
+} from "@dnd-kit/sortable";
+import { CSS } from "@dnd-kit/utilities";
 import { activateMasterEntity } from "../../../services/activate";
 import { getSizeDropdown } from "../../../services/size";
 import { getPackageDropdown } from "../../../services/packageType";
 import { useToast } from "../../../context/ToastContext";
 import { Card, CardContent, Divider } from "@mui/material";
+import { InputText } from "primereact/inputtext";
+import { IconField } from "primereact/iconfield";
+import { InputIcon } from "primereact/inputicon";
+import { FilterMatchMode } from "primereact/api";
+import { Button as PrimeButton } from "primereact/button";
+
+const TYPE_LABELS = {
+  PS: "Powdered Spices",
+  RS: "Raw Spices",
+  BS: "Blended Spices",
+};
 
 const ProductPrice = () => {
   const [open, setOpen] = useState(false);
@@ -49,6 +75,7 @@ const ProductPrice = () => {
     productId: "",
     sizeId: "",
     packageTypeId: "",
+    storageInstructions: "",
   });
   const [productList, setProductList] = useState([]);
   const [productImages, setProductImages] = useState([]);
@@ -65,14 +92,25 @@ const ProductPrice = () => {
   const [totalElements, setTotalElements] = useState(0);
   const [totalPages, setTotalPages] = useState(0);
   const [loading, setLoading] = useState(false);
+  const [activePriceId, setActivePriceId] = useState(null);
   const actionRef = useRef(null);
   const [selectedRow, setSelectedRow] = useState(null);
   // const [editRow, setEditRow] = useState(null);
   const isManualProductChange = useRef(false);
   const isEditMode = useRef(false);
 
-  const productId = editId || localStorage.getItem("activeProductId");
-  const imagesEnabled = !!productId;
+  const [globalFilter, setGlobalFilter] = useState("");
+  const [filters, setFilters] = useState({
+    global: { value: null, matchMode: FilterMatchMode.CONTAINS },
+  });
+
+  const priceId =
+    editId != null
+      ? Number(editId)
+      : activePriceId != null
+        ? Number(activePriceId)
+        : null;
+  const imagesEnabled = Boolean(priceId);
 
   const fetchProducts = async () => {
     try {
@@ -224,7 +262,9 @@ const ProductPrice = () => {
 
         productName: item.productName,
         productCategory: item.productCategory,
-        productType: item.productType,
+        productType: TYPE_LABELS[item.productType]
+          ? `${TYPE_LABELS[item.productType]} (${item.productType})`
+          : item.productType,
 
         size: item.sizeType ? `${item.size} ${item.sizeType}` : item.size,
 
@@ -235,6 +275,7 @@ const ProductPrice = () => {
         gst: item.gst,
         shelfLife: item.shelfLife,
         sellingPrice: item.sellingPrice,
+        storageInstructions: item.storageInstructions,
         productPriceStatus: item.productPriceStatus ? "Active" : "Inactive",
       }));
 
@@ -279,17 +320,25 @@ const ProductPrice = () => {
     {
       field: "mrpPrice",
       header: "MRP",
+      body: (row) => `₹${row.mrpPrice}`,
       style: { minWidth: "100px" },
     },
     {
       field: "discount",
       header: "Discount",
+      body: (row) => `${row.discount}%`,
       style: { minWidth: "100px" },
     },
-    { field: "gst", header: "GST", style: { minWidth: "100px" } },
+    {
+      field: "gst",
+      header: "GST",
+      body: (row) => `${row.gst}%`,
+      style: { minWidth: "100px" },
+    },
     {
       field: "sellingPrice",
       header: "Selling Price",
+      body: (row) => `₹${row.sellingPrice}`,
       style: { minWidth: "150px" },
     },
     {
@@ -336,6 +385,46 @@ const ProductPrice = () => {
       ),
     },
   ];
+
+  const header = (
+    <div className="flex justify-content-between align-items-center p-3">
+      {/* CLEAR BUTTON */}
+      <PrimeButton
+        icon="pi pi-filter-slash"
+        label="Clear"
+        outlined
+        size="small"
+        onClick={() => {
+          setFilters({
+            global: { value: null, matchMode: FilterMatchMode.CONTAINS },
+          });
+          setGlobalFilter("");
+        }}
+      />
+
+      {/* SEARCH INPUT */}
+      <IconField iconPosition="left" className="search-field">
+        <InputIcon className="pi pi-search" />
+        <InputText
+          value={globalFilter}
+          onChange={(e) => {
+            const value = e.target.value;
+
+            setFilters({
+              global: {
+                value,
+                matchMode: FilterMatchMode.CONTAINS,
+              },
+            });
+
+            setGlobalFilter(value);
+          }}
+          placeholder="Keyword Search"
+          className="p-inputtext-sm"
+        />
+      </IconField>
+    </div>
+  );
 
   // const handleEditClick = async (row) => {
   //   if (!row) return;
@@ -499,7 +588,10 @@ const ProductPrice = () => {
         sellingPrice: String(priceData.sellingPrice ?? ""),
         shelfLife: String(priceData.shelfLife ?? ""),
         gst: String(priceData.gst ?? ""),
+        storageInstructions: String(priceData.storageInstructions ?? ""),
       });
+
+      await loadProductImages(priceData.priceId);
 
       setEditId(priceData.priceId);
       setOpen(true);
@@ -598,6 +690,48 @@ const ProductPrice = () => {
     setProductImages([]);
   };
 
+  // const handleSave = async () => {
+  //   if (
+  //     !form.productId ||
+  //     !form.sizeId ||
+  //     !form.packageTypeId ||
+  //     !form.mrpPrice ||
+  //     !form.discount ||
+  //     !form.gst ||
+  //     !form.shelfLife
+  //   ) {
+  //     showToast("Please fill all required fields", "warning");
+  //     return;
+  //   }
+  //   try {
+  //     const payload = {
+  //       priceId: editId || undefined, // 🔑 for edit
+  //       mrp: parseFloat(form.mrpPrice),
+  //       discount: parseFloat(form.discount),
+  //       sellingPrice: parseFloat(form.sellingPrice),
+  //       shelfLife: Number(form.shelfLife),
+  //       productId: Number(form.productId),
+  //       sizeId: Number(form.sizeId),
+  //       packageTypeId: Number(form.packageTypeId),
+  //       gst: Number(form.gst),
+  //     };
+
+  //     if (editId) {
+  //       await updateProductPrice(payload);
+  //       showToast("Price Updated Successfully", "success");
+  //     } else {
+  //       await addProductPrice(payload);
+  //       showToast("Price Added Successfully", "success");
+  //     }
+
+  //     setOpen(false);
+  //     setEditId(null);
+  //     fetchProductList();
+  //   } catch (error) {
+  //     showToast("Error saving price", "error");
+  //   }
+  // };
+
   const handleSave = async () => {
     if (
       !form.productId ||
@@ -606,43 +740,101 @@ const ProductPrice = () => {
       !form.mrpPrice ||
       !form.discount ||
       !form.gst ||
-      !form.shelfLife
+      !form.shelfLife ||
+      !form.storageInstructions.trim()
     ) {
       showToast("Please fill all required fields", "warning");
       return;
     }
+
+    const mrp = Number(form.mrpPrice);
+    const discount = Number(form.discount);
+    const gst = Number(form.gst);
+    const shelfLife = Number(form.shelfLife);
+
+    if (mrp <= 0) {
+      showToast("MP must be greater than 0", "warning");
+      return;
+    }
+
+    if (discount < 0 || discount > 100) {
+      showToast("Discount must be between 0 and 100", "warning");
+      return;
+    }
+
+    if (gst < 0 || gst > 100) {
+      showToast("GST must be between 0 and 100", "warning");
+    }
+
+    if (shelfLife <= 0) {
+      showToast("Shelf Life must be valid", "warning");
+      return;
+    }
+
+    const exists = price.some(
+      (item) =>
+        item.productId === Number(form.productId) &&
+        item.sizeId === Number(form.sizeId) &&
+        item.packageTypeId === Number(form.packageTypeId),
+    );
+
+    if (!editId && exists) {
+      showToast("This variant already exists!", "warning");
+      return;
+    }
+
     try {
       const payload = {
-        priceId: editId || undefined, // 🔑 for edit
-        mrp: parseFloat(form.mrpPrice),
+        mrp: Number(form.mrpPrice),
         discount: parseFloat(form.discount),
-        sellingPrice: parseFloat(form.sellingPrice),
+        gst: Number(form.gst),
         shelfLife: Number(form.shelfLife),
         productId: Number(form.productId),
         sizeId: Number(form.sizeId),
         packageTypeId: Number(form.packageTypeId),
-        gst: Number(form.gst),
+        sellingPrice: parseFloat(form.sellingPrice),
+        storageInstructions: form.storageInstructions.trim(),
       };
 
       if (editId) {
+        payload.priceId = editId;
         await updateProductPrice(payload);
         showToast("Price Updated Successfully", "success");
       } else {
-        await addProductPrice(payload);
-        showToast("Price Added Successfully", "success");
+        const res = await addProductPrice(payload);
+
+        const newPriceId =
+          res?.data?.data?.priceId || res?.data?.data?.id || res?.data?.priceId;
+
+        if (newPriceId) {
+          // setPrice(Number(newPriceId));
+          setEditId(Number(newPriceId));
+        }
+
+        showToast(
+          "Price Added Successfully. You can upload images now.",
+          "success",
+        );
       }
 
-      setOpen(false);
-      setEditId(null);
       fetchProductList();
     } catch (error) {
+      console.error("SAVE PRICE ERROR:", error?.response?.data || error);
       showToast("Error saving price", "error");
     }
   };
 
-  const loadProductImages = async (productId) => {
+  useEffect(() => {
+    if (priceId) {
+      loadProductImages(priceId);
+    }
+  }, [priceId]);
+
+  const BASE_URL = import.meta.env.VITE_API_URL;
+
+  const loadProductImages = async (priceId) => {
     try {
-      const res = await getProductImages(productId);
+      const res = await getProductPriceImages(priceId);
       const data = res?.data?.data || [];
 
       const normalized = data.map((img) => {
@@ -666,7 +858,7 @@ const ProductPrice = () => {
   };
 
   const handleProductImagesChange = async (files) => {
-    if (!productId) {
+    if (!priceId) {
       showToast("Save product first", "warning");
       return;
     }
@@ -675,18 +867,18 @@ const ProductPrice = () => {
     files.forEach((f) => formData.append("files", f));
 
     try {
-      await uploadProductImages(productId, formData);
+      await uploadProductPriceImages(priceId, formData);
       showToast("Images uploaded", "success");
 
       // 🔁 ALWAYS reload from backend
-      await loadProductImages(productId);
+      await loadProductImages(priceId);
     } catch (err) {
       showToast("Upload failed", "error");
     }
   };
 
   const handleSetDefault = async (imageId) => {
-    const pid = Number(productId);
+    const pid = Number(priceId);
     const iid = Number(imageId);
 
     if (!Number.isInteger(pid) || !Number.isInteger(iid)) {
@@ -704,7 +896,7 @@ const ProductPrice = () => {
       );
 
       // ✅ CALL BACKEND (DATA SYNC ONLY)
-      await setPrimaryImage(pid, iid);
+      await setPrimaryPriceImage(pid, iid);
       showToast("Default image updated", "success");
     } catch (err) {
       showToast("Failed to set default image", "error");
@@ -713,7 +905,7 @@ const ProductPrice = () => {
 
   const handleRemoveImage = async (imgId) => {
     const iid = Number(imgId);
-    const pid = Number(productId);
+    const pid = Number(priceId);
 
     if (!Number.isInteger(pid) || !Number.isInteger(iid)) {
       showToast("Invalid Image ID", "error");
@@ -721,7 +913,7 @@ const ProductPrice = () => {
     }
 
     try {
-      await deleteProductImage(pid, iid);
+      await deleteProductPriceImage(pid, iid);
       showToast("Image deleted", "success");
       await loadProductImages(pid);
     } catch (err) {
@@ -734,6 +926,84 @@ const ProductPrice = () => {
     productImages.find((img) => img.isDefault)?.id ??
     productImages[0]?.id ??
     "";
+
+  function SortableImage({ img, index, handleRemove }) {
+    const { attributes, listeners, setNodeRef, transform, transition } =
+      useSortable({ id: img.id, animateLayoutChanges: () => false });
+
+    const style = {
+      transform: CSS.Transform.toString(transform),
+      transition,
+      width: 90,
+      height: 90,
+      borderRadius: 6,
+      overflow: "hidden",
+      position: "relative",
+      border: img.isDefault ? "2px solid #4caf50" : "1px solid #ccc",
+      cursor: "grab",
+    };
+    return (
+      <Box ref={setNodeRef} style={style} {...attributes} {...listeners}>
+        <img
+          src={img.url}
+          style={{ width: "100%", height: "100%", objectFit: "cover" }}
+        />
+        {/* DEFAULT BADGE */}
+        {img.isDefault && (
+          <Box
+            sx={{
+              position: "absolute",
+              top: 4,
+              left: 4,
+              background: "green",
+              color: "white",
+              fontSize: "10px",
+              px: "6px",
+              py: "2px",
+              borderRadius: "6px",
+              fontWeight: "600",
+            }}
+          >
+            DEFAULT
+          </Box>
+        )}
+        <IconButton
+          size="small"
+          sx={{
+            position: "absolute",
+            top: 4,
+            right: 4,
+            background: "rgba(0,0,0,0.6)",
+            color: "white",
+          }}
+          onClick={(e) => {
+            e.stopPropagation();
+            e.preventDefault();
+            handleRemove(img.id);
+          }}
+        >
+          <ClearOutlinedIcon fontSize="small" />
+        </IconButton>
+      </Box>
+    );
+  }
+
+  // --- put these near the top of ProductsMaster, after your useState lines ---
+  const pointerSensor = useSensor(PointerSensor);
+  const sensors = useSensors(pointerSensor);
+
+  const handleDragEnd = (event) => {
+    const { active, over } = event;
+    if (!over) return;
+    if (active.id !== over.id) {
+      setProductImages((prev) => {
+        const oldIndex = prev.findIndex((img) => img.id === active.id);
+        const newIndex = prev.findIndex((img) => img.id === over.id);
+        if (oldIndex === -1 || newIndex === -1) return prev;
+        return arrayMove(prev, oldIndex, newIndex);
+      });
+    }
+  };
 
   return (
     <Box sx={{ p: 3 }}>
@@ -759,9 +1029,16 @@ const ProductPrice = () => {
               productId: "",
               sizeId: "",
               packageTypeId: "",
+              storageInstructions: "",
             });
+
+            setEditId(null); // 🔥 clear edit
+            setActivePriceId(null); // 🔥 clear priceId
+            setProductImages([]); // 🔥 clear images
+
+            isEditMode.current = false; // 🔥 reset mode
+
             fetchProducts();
-            setEditId(null);
             setOpen(true);
           }}
         >
@@ -776,6 +1053,9 @@ const ProductPrice = () => {
         totalPages={totalPages}
         loading={loading}
         enablePagination
+        header={header}
+        filters={filters} // ✅ ADD THIS
+        globalFilter={globalFilter} // ✅ ADD THIS
         onPageChange={(data) =>
           setPagination({
             page: data.page,
@@ -860,6 +1140,7 @@ const ProductPrice = () => {
                 <TextField
                   select
                   label="Product Size"
+                  disabled={!form.productId}
                   name="sizeId"
                   value={form.sizeId ?? ""}
                   onChange={handleChange}
@@ -882,6 +1163,7 @@ const ProductPrice = () => {
                   select
                   label="Package Type"
                   name="packageTypeId"
+                  disabled={!form.productId}
                   value={form.packageTypeId ?? ""}
                   onChange={handleChange}
                   sx={{ width: 350 }}
@@ -921,6 +1203,15 @@ const ProductPrice = () => {
                   onChange={handleChange}
                 />
               </Stack>
+              <TextField
+                label="Storage Instructions"
+                name="storageInstructions"
+                value={form.storageInstructions}
+                onChange={handleChange}
+                multiline
+                rows={4}
+                fullWidth
+              />
             </Stack>
           </CardContent>
           <Stack direction="row" spacing={2} justifyContent="flex-end" mt={3}>

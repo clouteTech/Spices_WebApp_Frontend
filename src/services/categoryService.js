@@ -1,4 +1,4 @@
-import instance from "./api";
+import instance from "./adminApi";
 
 export const getCategoryList = (payload) =>
   instance.post("/company/get/categorylist", payload);

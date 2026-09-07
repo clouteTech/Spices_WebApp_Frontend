@@ -448,6 +448,8 @@ const CompanyDetails = () => {
   const [logo, setLogo] = useState(null);
 
   const [upiQrFile, setUpiQrFile] = useState(null);
+  const [initialCompanyForm, setInitialCompanyForm] = useState(null);
+
 
   // const [generalInfo, setGeneralInfo] = useState({
   //   companyName: "",
@@ -504,7 +506,7 @@ const CompanyDetails = () => {
         const res = await getCompanyDetails();
 
         if (res.data.status === 200) {
-          setCompanyForm({
+          const payload={
             companyName: res.data.data.companyName || "",
             companyEmail: res.data.data.companyEmail || "",
             companyPhoneNo: res.data.data.companyPhoneNo || "",
@@ -520,7 +522,9 @@ const CompanyDetails = () => {
             pincode: res.data.data.pincode || "",
             country: res.data.data.country || "",
             gstNo: res.data.data.gstNo || "",
-          });
+          };
+          setCompanyForm(payload);
+          setInitialCompanyForm(payload)
         }
       } catch {
         showToast("Failed to load company details");
@@ -529,6 +533,13 @@ const CompanyDetails = () => {
 
     fetchCompany();
   }, []);
+
+  const isFormChanged = () => {
+    if (!initialCompanyForm) return false;
+
+    return JSON.stringify(companyForm) !== JSON.stringify(initialCompanyForm);
+  };
+
 
   // -------------------- Handlers --------------------
   const handleChange = (e) => {
@@ -554,16 +565,26 @@ const CompanyDetails = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
 
+    if (!isFormChanged()) {
+      showToast("No changes detected", "info");
+      return;
+    }
+
     try {
       const res = await updateCompanyDetails(companyForm);
+      console.log("API RESPONSE:", res);
 
-      if (res.data.status === 200) {
+      if (res.status === 200) {
         showToast("Company details updated successfully", "success");
+
+        // ✅ Reset baseline after save
+        setInitialCompanyForm(companyForm);
       }
     } catch {
       showToast("Failed to update company details", "error");
     }
   };
+
 
   const handleLogoUpload = async () => {
     if (!logo) {
@@ -727,7 +748,7 @@ const CompanyDetails = () => {
             </Grid>
 
             <Box sx={{ textAlign: "right", mt: 3 }}>
-              <Button type="submit" variant="contained" color="primary">
+              <Button type="submit" variant="contained" color="primary" disabled={!isFormChanged()}>
                 Save Company Details
               </Button>
             </Box>
@@ -754,7 +775,7 @@ const CompanyDetails = () => {
                 { label: "Account Number", name: "accountNumber" },
                 { label: "IFSC Code", name: "ifscCode" },
                 { label: "Branch", name: "branch" },
-                { label: "UPI ID", name: "upiId" },
+                // { label: "UPI ID", name: "upiId" },
               ].map((field) => (
                 <Grid item xs={12} sm={6} key={field.name}>
                   <TextField

@@ -386,7 +386,6 @@ import { BorderColorTwoTone, DeleteOutlineTwoTone } from "@mui/icons-material";
 import MoreVertIcon from "@mui/icons-material/MoreVert";
 import { OverlayPanel } from "primereact/overlaypanel";
 import CheckCircleOutlineRoundedIcon from "@mui/icons-material/CheckCircleOutlineRounded";
-
 import GlobalModal from "../../../ui/GlobalModal";
 import { GlobalDeleteModal } from "../../../ui/GlobalModal";
 import {
@@ -397,6 +396,11 @@ import {
 } from "../../../services/packageType";
 import { activateMasterEntity } from "../../../services/activate";
 import { useToast } from "../../../context/ToastContext";
+import { InputText } from "primereact/inputtext";
+import { IconField } from "primereact/iconfield";
+import { InputIcon } from "primereact/inputicon";
+import { FilterMatchMode, FilterOperator } from "primereact/api";
+import { Button as PrimeButton } from "primereact/button";
 
 const PackageType = () => {
   const { showToast } = useToast();
@@ -425,17 +429,50 @@ const PackageType = () => {
 
   // ===== SEARCH =====
   const [globalFilter, setGlobalFilter] = useState("");
+  const [filters, setFilters] = useState({
+    global: { value: null, matchMode: FilterMatchMode.CONTAINS },
+  });
 
-  // const header = (
-  //   <Box display="flex" justifyContent="flex-end">
-  //     <TextField
-  //       size="small"
-  //       placeholder="Search..."
-  //       value={globalFilter}
-  //       onChange={(e) => setGlobalFilter(e.target.value)}
-  //     />
-  //   </Box>
-  // );
+  const header = (
+    <div className="flex justify-content-between align-items-center p-3">
+      {/* CLEAR BUTTON */}
+      <PrimeButton
+        icon="pi pi-filter-slash"
+        label="Clear"
+        outlined
+        size="small"
+        onClick={() => {
+          setFilters({
+            global: { value: null, matchMode: FilterMatchMode.CONTAINS },
+          });
+          setGlobalFilter("");
+        }}
+      />
+
+      {/* SEARCH INPUT */}
+      <IconField iconPosition="left" className="search-field">
+        <InputIcon className="pi pi-search" />
+        <InputText
+          value={globalFilter}
+          onChange={(e) => {
+            const value = e.target.value;
+
+            setFilters({
+              global: {
+                value,
+                matchMode: FilterMatchMode.CONTAINS,
+              },
+            });
+
+            setGlobalFilter(value);
+          }}
+          placeholder="Keyword Search"
+          className="p-inputtext-sm"
+        />
+      </IconField>
+    </div>
+  );
+
 
   // ===== COLUMNS =====
   const columns = [
@@ -567,10 +604,28 @@ const PackageType = () => {
       return;
     }
 
+    const exists = packageType.some(
+      (item) =>
+        item.packageType.toLowerCase() ===
+        form.packageType.trim().toLowerCase(),
+    );
+
+    if (!editId && exists) {
+      showToast("This Package Type already exists!", "warning");
+      return;
+    }
+
+    const namePattern = /^[A-Za-z\s]+$/;
+
+    if (!namePattern.test(form.packageType.trim())) {
+      showToast("Only letters allowed (e.g. Pouch, Jar)", "warning");
+      return;
+    }
+
     try {
       const payload = {
         packageTypeId: form.packageTypeId || editId || null,
-        type: form.packageType,
+        type: form.packageType.trim(),
       };
       const response = editId
         ? await updatePackageType(payload)
@@ -632,11 +687,13 @@ const PackageType = () => {
       <Table
         value={packageType}
         columns={columns}
+        filters={filters}
+        setFilters={setFilters}
+        header={header}
+        globalFilterFields={["packageType", "packageStatus"]}
         pagination={pagination}
         totalRecords={totalElements}
         loading={loading}
-        // header={header}
-        globalFilter={globalFilter}
         enablePagination
         onPageChange={(data) =>
           setPagination({ page: data.page, size: data.size, first: data.first })

@@ -1,6 +1,10 @@
-body {
+* {
   margin: 0;
   padding: 0;
+  box-sizing: border-box;
+}
+
+body {
   background-color: #f4f6f8;
 }
 
@@ -32,4 +36,15 @@ body {
 
 .sidebar::-webkit-scrollbar {
   display: none;              /* Chrome, Safari */
+}
+
+@keyframes fadeIn {
+  from{
+    opacity: 0;
+    transform: translateX(50px);
+  }
+  to{
+    opacity: 1;
+    transform: translateY(0);
+  }
 }

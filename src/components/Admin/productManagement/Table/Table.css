@@ -43,7 +43,7 @@
 .custom-datatable .p-inputtext {
   height: 34px;
   border-radius: 6px;
-  font-size: 13px;
+  font-size: 14px;
   padding: 6px 10px;
 }
 
@@ -115,19 +115,19 @@
   border-radius: 8px;
 }
 
-/* =========================
+/* /* =========================
    TOP BAR (SEARCH + CLEAR)
 ========================= */
-.table-topbar {
+/* .table-topbar {
   display: flex;
   justify-content: space-between;
   align-items: center;
   padding: 12px 16px;
   border-bottom: 1px solid #e5e7eb;
-}
+} */
 
 /* Clear button */
-.clear-btn {
+/* .clear-btn {
   display: flex;
   align-items: center;
   gap: 6px;
@@ -138,14 +138,14 @@
   border-radius: 8px;
   font-size: 14px;
   cursor: pointer;
-}
+} */
 
-.clear-btn:hover {
+/* .clear-btn:hover {
   background-color: #e0f2fe;
-}
+} */
 
 /* Search input */
-.table-topbar .p-input-icon-left {
+/* .table-topbar .p-input-icon-left {
   position: relative;
 }
 
@@ -163,7 +163,7 @@
   width: 220px;
   border-radius: 8px;
   font-size: 14px;
-}
+} */ 
 
 /* ============================= */
 /* PrimeReact Filter Icon FIX */
@@ -244,4 +244,47 @@
 
 .p-datatable-thead > tr > th:first-child .p-column-title {
   margin-right: auto;
+}
+
+/* Fix PrimeReact IconField input padding */
+.p-icon-field-left .p-inputtext {
+  padding-left: 2.75rem !important;
+}
+
+.p-icon-field-left .p-input-icon {
+  left: 0.75rem;
+  color: #6b7280;
+}
+
+/* Make search look clean */
+.search-field {
+  width: 260px;
+  position: relative;
+}
+
+/* =========================
+   SEARCH FIELD (PrimeReact)
+========================= */
+.search-field {
+  width: 260px;
+  position: relative;
+}
+
+.search-field .p-inputtext {
+  height: 38px;
+  padding-left: 2.75rem !important;
+  border-radius: 8px;
+  font-size: 14px;
+}
+
+.search-field .p-input-icon {
+  left: 0.75rem;
+  top: 50%;
+  transform: translateY(-50%);
+  color: #6b7280;
+}
+
+/* Remove focus shadow */
+.p-inputtext:focus {
+  box-shadow: none;
 }

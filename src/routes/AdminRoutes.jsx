@@ -4,7 +4,7 @@ import Login from "../components/Admin/Login";
 import Dashboard from "../components/Admin/Dashboard";
 import OrderManagement from "../components/Admin/OrderManagement";
 import CompanyDetails from "../components/Admin/CompanyDetails";
-import PublicRoute from "./PublicRoute";
+import AdminPublicRoute from "./AdminPublicRoute";
 import ProtectedRoute from "./ProtectedRoute";
 import AdminLayout from "../components/Admin/AdminLayout";
 import SizeMaster from "../components/Admin/productManagement/SizeMaster";
@@ -12,11 +12,16 @@ import CategoryMaster from "../components/Admin/productManagement/CategoryMaster
 import ProductPrice from "../components/Admin/productManagement/ProductPrice";
 import PackageType from "../components/Admin/productManagement/PackageType";
 import BatchDetails from "../components/Admin/productManagement/BatchDetails";
+import StockMovement from "../components/Admin/productManagement/stockMovement";
+import InvoiceManagement from "../components/Admin/InvoiceManagement";
+import CompanyUser from "../components/Admin/CompanyUser";
+import CustomerUser from "../components/Admin/CustomerUser";
 import adminTheme from "../theme/AdminTheme";
 import { ThemeProvider } from "@emotion/react";
 import { CssBaseline } from "@mui/material";
 import ProductsMaster from "../components/Admin/productManagement/ProductsMaster";
 import BatchMaster from "../components/Admin/productManagement/BatchMaster";
+import CurrentStock from "../components/Admin/productManagement/CurrentStock";
 
 const AdminRoutes = () => {
   return (
@@ -27,9 +32,9 @@ const AdminRoutes = () => {
           <Route
             path="login"
             element={
-              <PublicRoute>
+              <AdminPublicRoute>
                 <Login />
-              </PublicRoute>
+              </AdminPublicRoute>
             }
           />
           <Route
@@ -44,12 +49,17 @@ const AdminRoutes = () => {
             <Route path="ProductsMaster" element={<ProductsMaster />} />
             <Route path="SizeMaster" element={<SizeMaster />} />
             <Route path="ProductPrice" element={<ProductPrice />} />
-            <Route path="PackageType" element={<PackageType/>}/>
+            <Route path="PackageType" element={<PackageType />} />
             <Route path="CategoryMaster" element={<CategoryMaster />} />
             <Route path="orders" element={<OrderManagement />} />
-            <Route path="BatchMaster" element={<BatchMaster/>}/>
-            <Route path="BatchDetails" element={<BatchDetails/>}/>
+            <Route path="BatchMaster" element={<BatchMaster />} />
+            <Route path="BatchDetails" element={<BatchDetails />} />
             <Route path="company/:companyId" element={<CompanyDetails />} />
+            <Route path="StockMovement" element={<StockMovement />} />
+            <Route path="InvoiceManagement" element={<InvoiceManagement />} />
+            <Route path="CompanyUser" element={<CompanyUser />} />
+            <Route path="CustomerUser" element={<CustomerUser />} />
+            <Route path="CurrentStock" element={<CurrentStock />} />
           </Route>
         </Routes>
       </ThemeProvider>

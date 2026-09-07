@@ -117,9 +117,12 @@
 
 // export default Table;
 
-import React from "react";
+
+
+import React, { useEffect, useState } from "react";
 import { DataTable } from "primereact/datatable";
 import { Column } from "primereact/column";
+import { FilterMatchMode } from "primereact/api";
 import "./Table.css";
 
 const Table = ({
@@ -130,16 +133,34 @@ const Table = ({
   totalRecords = 0,
   onPageChange,
   header = null,
-  globalFilter,
+  globalFilter = "",
   enablePagination = true,
+  dataKey = "id"
 }) => {
+  // ✅ PrimeReact filters state
+  const [filters, setFilters] = useState({
+    global: { value: null, matchMode: FilterMatchMode.CONTAINS },
+  });
+
+  // ✅ Sync parent globalFilter → PrimeReact filter
+  useEffect(() => {
+    setFilters({
+      global: {
+        value: globalFilter,
+        matchMode: FilterMatchMode.CONTAINS,
+      },
+    });
+  }, [globalFilter]);
   return (
     <DataTable
       value={value}
       dataKey="id"
       loading={loading}
       header={header}
-      globalFilter={globalFilter}
+      filters={filters} // ✅ IMPORTANT
+      globalFilterFields={columns // ✅ auto-pick searchable fields
+        .filter((c) => c.field)
+        .map((c) => c.field)}
       showGridlines
       className="custom-datatable"
       emptyMessage="No records found"
@@ -148,7 +169,7 @@ const Table = ({
       scrollHeight="400px"
       {...(enablePagination && {
         paginator: true,
-        lazy: true,
+        // lazy: true,
         rows: pagination.size,
         first: pagination.first,
         totalRecords: totalRecords,
@@ -169,4 +190,55 @@ const Table = ({
 };
 
 export default Table;
+
+// import React from "react";
+// import { DataTable } from "primereact/datatable";
+// import { Column } from "primereact/column";
+
+// const Table = ({
+//   value = [],
+//   columns = [],
+//   filters,
+//   setFilters,
+//   header,
+//   globalFilterFields = [],
+//   loading = false,
+//   pagination,
+//   totalRecords = 0,
+//   onPageChange,
+//   enablePagination = true,
+// }) => {
+//   return (
+//     <DataTable
+//       value={value}
+//       dataKey="id"
+//       header={header}
+//       filters={filters}
+//       onFilter={(e) => setFilters(e.filters)} // 🔥 REQUIRED
+//       globalFilterFields={globalFilterFields}
+//       loading={loading}
+//       showGridlines
+//       stripedRows
+//       paginator={enablePagination}
+//       lazy={enablePagination}
+//       rows={pagination?.size}
+//       first={pagination?.first}
+//       totalRecords={totalRecords}
+//       onPage={(e) =>
+//         onPageChange?.({
+//           page: e.page,
+//           size: e.rows,
+//           first: e.first,
+//         })
+//       }
+//       emptyMessage="No records found"
+//     >
+//       {columns.map((col, i) => (
+//         <Column key={i} {...col} />
+//       ))}
+//     </DataTable>
+//   );
+// };
+
+// export default Table;
 

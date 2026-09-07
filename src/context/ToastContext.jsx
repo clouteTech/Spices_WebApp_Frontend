@@ -4,18 +4,16 @@ import { toast } from "react-toastify";
 const ToastContext = createContext();
 
 export const ToastProvider = ({ children }) => {
-  const toastIdRef = useRef(null); // 🔥 ONE toast id
+  const toastIdRef = useRef(null);
 
   const showToast = (msg, type = "info") => {
     if (toastIdRef.current) {
-      // ✅ update existing toast
       toast.update(toastIdRef.current, {
         render: msg,
         type,
         autoClose: 3000,
       });
     } else {
-      // ✅ create toast only once
       toastIdRef.current = toast(msg, {
         type,
         autoClose: 3000,

@@ -1,5 +1,5 @@
 import React from "react";
-import { ToastContainer } from "react-toastify";
+import { Slide, ToastContainer } from "react-toastify";
 import { Routes, Route } from "react-router-dom";
 import { UserProvider } from "./context/UserContext";
 import "react-toastify/dist/ReactToastify.css";
@@ -16,7 +16,7 @@ const App = () => {
             <Route path="/*" element={<CustomerRoutes />} />
             <Route path="/admin/*" element={<AdminRoutes />} />
           </Routes>
-          <ToastContainer position="top-center" autoClose={3000} />
+          <ToastContainer position="top-center" autoClose={3000} transition={Slide} />
         </ToastProvider>
       </UserProvider>
     </>

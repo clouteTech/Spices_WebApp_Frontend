@@ -543,6 +543,11 @@ import {
 } from "../../../services/categoryService";
 import { activateMasterEntity } from "../../../services/activate";
 import { useToast } from "../../../context/ToastContext";
+import { InputText } from "primereact/inputtext";
+import { IconField } from "primereact/iconfield";
+import { InputIcon } from "primereact/inputicon";
+import { FilterMatchMode } from "primereact/api";
+import { Button as PrimeButton } from "primereact/button";
 
 const TYPE_LABELS = {
   PS: "Powdered Spices",
@@ -577,6 +582,11 @@ const CategoryMaster = () => {
     categoryCode: "",
     description: "",
     categoryId: "",
+  });
+
+  const [globalFilter, setGlobalFilter] = useState("");
+  const [filters, setFilters] = useState({
+    global: { value: null, matchMode: FilterMatchMode.CONTAINS },
   });
 
   // ===== PRODUCT TYPES (if needed later) =====
@@ -679,15 +689,34 @@ const CategoryMaster = () => {
     setForm({ ...form, [e.target.name]: e.target.value });
   };
   const handleSave = async () => {
-    if (!form.productType || !form.categoryName) {
+    if (!form.productType || !form.categoryName.trim()) {
       showToast("Please fill all required fields", "warning");
+      return;
+    }
+
+    const exists = categories.some(
+      (item) =>
+        item.productType === TYPE_LABELS[form.productType] &&
+        item.categoryName.toLowerCase() ===
+          form.categoryName.trim().toLowerCase(),
+    );
+
+    if (!editId && exists) {
+      showToast("This Category already exists!", "warning");
+      return;
+    }
+
+    const namePattern = /^[A-Za-z\s]+$/;
+
+    if (!namePattern.test(form.categoryName.trim())) {
+      showToast("Only letters allowed (e.g. Turmeric, Chilli)", "warning");
       return;
     }
 
     const payload = {
       categoryId: form.categoryId || null, // ✅ THIS IS KEY
       productType: form.productType,
-      categoryName: form.categoryName,
+      categoryName: form.categoryName.trim(),
       categoryCode: form.categoryCode,
       description: form.description,
     };
@@ -759,6 +788,46 @@ const CategoryMaster = () => {
     }
   };
 
+  const header = (
+    <div className="flex justify-content-between align-items-center p-3">
+      {/* CLEAR BUTTON */}
+      <PrimeButton
+        icon="pi pi-filter-slash"
+        label="Clear"
+        outlined
+        size="small"
+        onClick={() => {
+          setFilters({
+            global: { value: null, matchMode: FilterMatchMode.CONTAINS },
+          });
+          setGlobalFilter("");
+        }}
+      />
+
+      {/* SEARCH INPUT */}
+      <IconField iconPosition="left" className="search-field">
+        <InputIcon className="pi pi-search" />
+        <InputText
+          value={globalFilter}
+          onChange={(e) => {
+            const value = e.target.value;
+
+            setFilters({
+              global: {
+                value,
+                matchMode: FilterMatchMode.CONTAINS,
+              },
+            });
+
+            setGlobalFilter(value);
+          }}
+          placeholder="Keyword Search"
+          className="p-inputtext-sm"
+        />
+      </IconField>
+    </div>
+  );
+
   // ===== COLUMNS (PRIME STYLE) =====
   const columns = [
     {
@@ -821,6 +890,15 @@ const CategoryMaster = () => {
       <Table
         value={categories}
         columns={columns}
+        filters={filters}
+        setFilters={setFilters}
+        header={header}
+        globalFilterFields={[
+          "categoryName",
+          "categoryCode",
+          "productType",
+          "categoryStatus",
+        ]}
         pagination={pagination}
         totalRecords={totalElements}
         loading={loading}

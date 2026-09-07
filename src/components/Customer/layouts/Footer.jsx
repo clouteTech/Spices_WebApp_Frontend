@@ -1,5 +1,5 @@
 import React from "react";
-import { Link } from "react-router-dom";
+import { Link,useLocation } from "react-router-dom";
 import { Box, Container, Grid, Typography, IconButton } from "@mui/material";
 import FacebookOutlinedIcon from "@mui/icons-material/FacebookOutlined";
 import MailOutlinedIcon from "@mui/icons-material/MailOutlined";
@@ -7,6 +7,11 @@ import WhatsAppIcon from "@mui/icons-material/WhatsApp";
 import InstagramIcon from "@mui/icons-material/Instagram";
 
 const Footer = () => {
+  const location = useLocation();
+  const hideFooter = ["/checkout"];
+  if(hideFooter.includes(location.pathname)){
+    return null;
+  }
   return (
     <Box
       component="footer"

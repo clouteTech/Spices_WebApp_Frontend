@@ -99,7 +99,14 @@
 // export default BatchDetails;
 
 import React, { useState, useEffect, useRef } from "react";
-import { TextField,IconButton,Typography,Box } from "@mui/material";
+import {
+  TextField,
+  IconButton,
+  Typography,
+  Box,
+  Button,
+  Stack,
+} from "@mui/material";
 import {
   getBatchList,
   updateBatchProduct,
@@ -107,6 +114,8 @@ import {
   updateBatchProductStatus,
   refreshBatchStatus,
 } from "../../../services/batchDetails";
+import GlobalModal from "../../../ui/GlobalModal";
+import Table from "./Table/Table";
 import { DataTable } from "primereact/datatable";
 import { Column } from "primereact/column";
 import { Tag } from "primereact/tag";
@@ -114,8 +123,17 @@ import { Toast } from "primereact/toast";
 import { InputText } from "primereact/inputtext";
 import { InputNumber } from "primereact/inputnumber";
 import DeleteOutlineOutlinedIcon from "@mui/icons-material/DeleteOutlineOutlined";
+import CompareArrowsIcon from "@mui/icons-material/CompareArrows";
+import { OverlayPanel } from "primereact/overlaypanel";
+import MoreVertIcon from "@mui/icons-material/MoreVert";
 import UpdateIcon from "@mui/icons-material/Update";
 import { Dropdown } from "primereact/dropdown";
+
+const TYPE_LABELS = {
+  PS: "Powdered Spices",
+  RS: "Raw Spices",
+  BS: "Blended Spices",
+};
 
 const BatchDetails = () => {
   const toast = useRef(null);
@@ -123,6 +141,9 @@ const BatchDetails = () => {
   const [batches, setBatches] = useState([]);
   const [expandedRows, setExpandedRows] = useState(null);
   const [loading, setLoading] = useState(false);
+  const [openMove, setOpenMove] = useState(false);
+  const [moveData, setMoveData] = useState([]);
+  const [step, setStep] = useState(1);
 
   // const fetchBatchList = async () => {
   //   try {
@@ -218,6 +239,34 @@ const BatchDetails = () => {
     });
   };
 
+  const handleMoveQtyChange = (value, row) => {
+    const updated = moveData.map((item) =>
+      item.batchProductId === row.batchProductId
+        ? { ...item, moveQty: Number(value) }
+        : item,
+    );
+
+    setMoveData(updated);
+  };
+
+  const moveColumns = [
+    { field: "productName", header: "Product" },
+    { field: "size", header: "Size" },
+    { field: "availableQty", header: "Available Qty" },
+    { field: "sellingPrice", header: "Selling" },
+    {
+      header: "Move Qty",
+      body: (row) => (
+        <input
+          type="number"
+          value={row.moveQty}
+          onChange={(e) => handleMoveQtyChange(e.target.value, row)}
+          style={{ width: "80px" }}
+        />
+      ),
+    },
+  ];
+
   /* --------- ROW SAVE HANDLER (IMPORTANT) --------- */
 
   // const onProductRowEditComplete = async (batchId, e) => {
@@ -289,11 +338,11 @@ const BatchDetails = () => {
                 products: batch.products.map((p) =>
                   p.batchProductId === updatedRow.batchProductId
                     ? updatedRow
-                    : p
+                    : p,
                 ),
               }
-            : batch
-        )
+            : batch,
+        ),
       );
 
       toast.current.show({
@@ -330,11 +379,11 @@ const BatchDetails = () => {
                 products: batch.products.map((p) =>
                   p.batchProductId === rowData.batchProductId
                     ? { ...p, batchStatus: newStatus }
-                    : p
+                    : p,
                 ),
               }
-            : batch
-        )
+            : batch,
+        ),
       );
 
       toast.current.show({
@@ -382,7 +431,6 @@ const BatchDetails = () => {
     }
   };
 
-
   const deleteProduct = async (batchId, batchProductId) => {
     try {
       await deleteBatchProduct(batchProductId);
@@ -393,11 +441,11 @@ const BatchDetails = () => {
             ? {
                 ...batch,
                 products: batch.products.filter(
-                  (p) => p.batchProductId !== batchProductId
+                  (p) => p.batchProductId !== batchProductId,
                 ),
               }
-            : batch
-        )
+            : batch,
+        ),
       );
 
       toast.current.show({
@@ -473,6 +521,26 @@ const BatchDetails = () => {
     );
   };
 
+  const handleMoveClick = (batchProducts = []) => {
+    const updated = batchProducts.map((item) => ({
+      ...item,
+      moveQty: 0,
+    }));
+
+    setMoveData(updated);
+    setStep(1);
+    setOpenMove(true);
+  };
+
+  const dummyProducts = [
+    {
+      batchProductId: 1,
+      batchNo: "BA001",
+      productName: "Turmeric Powder",
+      size: "100g",
+      availableQty: 50,
+    },
+  ];
   /* --------- EXPANDED ROW TEMPLATE --------- */
 
   const rowExpansionTemplate = (batch, options) => {
@@ -482,12 +550,28 @@ const BatchDetails = () => {
       <div className="p-3">
         <h5>Products in Batch {batch.batchNo}</h5>
 
+        {/* <DataTable
+          value={batch.products}
+          editMode="row"
+          dataKey="batchProductId"
+          onRowEditComplete={(e) => onProductRowEditComplete(batch.batchId, e)}
+          filterDisplay="menu"
+          scrollable
+          scrollHeight="250px"
+          scrollDirection="both"
+          tableStyle={{ minWidth: "900px" }}
+        > */}
+        {/* <Box sx={{ width: "100%", overflowX: "auto" }}> */}
         <DataTable
           value={batch.products}
           editMode="row"
           dataKey="batchProductId"
           onRowEditComplete={(e) => onProductRowEditComplete(batch.batchId, e)}
           filterDisplay="menu"
+          scrollable
+          scrollHeight="250px"
+          scrollDirection="horizontal"
+          tableStyle={{ minWidth: "1000px", width: "max-content" }}
         >
           <Column
             field="productName"
@@ -495,12 +579,62 @@ const BatchDetails = () => {
             filter
             showFilterMenu
             showFilterMatchModes
+            style={{ minWidth: "180px" }}
           />
-          <Column field="categoryType" header="Product Type" />
-          <Column field="categoryName" header="Product Category" />
-          <Column field="quantity" header="Quantity" editor={numberEditor} />
-          <Column field="mrp" header="MRP" />
-          <Column field="sellingPrice" header="Selling Price" />
+          <Column
+            field="categoryType"
+            header="Product Type"
+            style={{ minWidth: "130px" }}
+            body={(rowData) =>
+              TYPE_LABELS[rowData.categoryType] || rowData.categoryType
+            }
+          />
+          <Column
+            field="categoryName"
+            header="Product Category"
+            style={{ minWidth: "150px" }}
+          />
+          <Column
+            header="Size"
+            body={(rowData) => `${rowData.size}${rowData.sizeType}`}
+          />
+          <Column
+            field="quantity"
+            header="Quantity"
+            body={(rowData) => (
+              <div style={{ textAlign: "center", width: "100%" }}>
+                {rowData.quantity}
+              </div>
+            )}
+          />
+          <Column field="mrp" header="MRP" style={{ minWidth: "80px" }} />
+          <Column
+            field="sellingPrice"
+            header="Selling Price"
+            style={{ minWidth: "120px" }}
+            body={(rowData) => (
+              <div style={{ textAlign: "center", width: "100%" }}>
+                {rowData.sellingPrice}
+              </div>
+            )}
+          />
+          <Column field="discount" header="Discount" />
+          <Column
+            field="packageType"
+            header="Package Type"
+            style={{ minWidth: "150px" }}
+          />
+          <Column
+            field="availableQty"
+            header="Available Qty"
+            style={{ minWidth: "130px" }}
+          />
+          <Column
+            field="totalQty"
+            header="Total Qty"
+            style={{ minWidth: "140px" }}
+          />
+
           {/* <Column
             field="manufacturedDate"
             header="Mfg Date"
@@ -533,7 +667,82 @@ const BatchDetails = () => {
             editor={statusEditor}
           />
 
-          <Column rowEditor headerStyle={{ width: "6rem" }} />
+          <Column
+            header="Action"
+            body={(rowData) => {
+              const opRef = React.createRef();
+
+              return (
+                <Box display="flex" alignItems="center" gap={1}>
+                  {/* Primary action */}
+                  {/* <Button
+                    variant="contained"
+                    size="small"
+                    onClick={() => {
+                      e.stopPropagation();
+                      handleMoveClick;
+                    }}
+                  >
+                    Move
+                  </Button> */}
+
+                  {/* Menu button */}
+                  <IconButton
+                    size="small"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      opRef.current.toggle(e);
+                    }}
+                  >
+                    <MoreVertIcon fontSize="small" />
+                  </IconButton>
+
+                  {/* Overlay menu */}
+                  <OverlayPanel ref={opRef} style={{ width: 140 }}>
+                    <Stack spacing={1}>
+                      <Button
+                        startIcon={<CompareArrowsIcon />}
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          handleMoveClick([rowData]);
+                        }}
+                      >
+                        Move
+                      </Button>
+
+                      <Button
+                        startIcon={<DeleteOutlineOutlinedIcon />}
+                        color="error"
+                        onClick={() =>
+                          deleteProduct(batch.batchId, rowData.batchProductId)
+                        }
+                      >
+                        Delete
+                      </Button>
+                    </Stack>
+                  </OverlayPanel>
+                </Box>
+              );
+            }}
+          />
+
+          {/* <Column
+            header="Action"
+            body={(rowData) => (
+              <Button
+                variant="contained"
+                size="small"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  handleMoveClick(dummyProducts); // 🔥 USE DUMMY
+                }}
+              >
+                Move
+              </Button>
+            )}
+          /> */}
+
+          {/* <Column rowEditor headerStyle={{ width: "6rem" }} />
 
           <Column
             header=""
@@ -549,8 +758,9 @@ const BatchDetails = () => {
                 <DeleteOutlineOutlinedIcon fontSize="small" />
               </IconButton>
             )}
-          />
+          /> */}
         </DataTable>
+        {/* </Box> */}
       </div>
     );
   };
@@ -572,8 +782,8 @@ const BatchDetails = () => {
         </Typography>
 
         <IconButton
-        onClick={handleRefresh}
-        disabled={loading}
+          onClick={handleRefresh}
+          disabled={loading}
           sx={{
             backgroundColor: "#00bcd4",
             color: "#fff",
@@ -584,7 +794,7 @@ const BatchDetails = () => {
             },
           }}
         >
-          <UpdateIcon  />
+          <UpdateIcon />
         </IconButton>
       </Box>
 
@@ -635,6 +845,125 @@ const BatchDetails = () => {
           editor={statusEditor}
         />
       </DataTable>
+      <GlobalModal
+        open={openMove}
+        handleClose={() => setOpenMove(false)}
+        title="Move Stock to Current Inventory"
+        actions={
+          <>
+            <Button onClick={() => setOpenMove(false)}>Cancel</Button>
+
+            {step === 2 && <Button onClick={() => setStep(1)}>Back</Button>}
+
+            {step === 1 && (
+              <Button
+                variant="contained"
+                onClick={() => {
+                  const hasInvalid = moveData.some(
+                    (item) => item.moveQty > item.availableQty,
+                  );
+
+                  if (hasInvalid) {
+                    alert("Move qty exceeds available qty");
+                    return;
+                  }
+
+                  setStep(2);
+                }}
+              >
+                Continue
+              </Button>
+            )}
+
+            {step === 2 && (
+              <Button variant="contained" color="success">
+                Confirm Move
+              </Button>
+            )}
+          </>
+        }
+      >
+        {/* {step === 1 && (
+          <Table
+            value={moveData}
+            columns={moveColumns}
+            enablePagination={false}
+          />
+        )} */}
+
+        {step === 1 && moveData.length > 0 && (
+          <Box sx={{ width: "100%" }}>
+            <Stack spacing={1.5}>
+              {/* Product Name */}
+              <Typography variant="h6" fontWeight={600}>
+                {moveData[0].productName}
+              </Typography>
+
+              {/* Info */}
+              <Box display="flex" justifyContent="space-between">
+                <Typography color="text.secondary">Category</Typography>
+                <Typography sx={{ minWidth: 120, textAlign: "right" }}>
+                  {moveData[0].category ?? "N/A"}
+                </Typography>
+              </Box>
+
+              <Box display="flex" justifyContent="space-between">
+                <Typography color="text.secondary">Type</Typography>
+                <Typography>{moveData[0].productType ?? "N/A"}</Typography>
+              </Box>
+
+              <Box display="flex" justifyContent="space-between">
+                <Typography color="text.secondary">Size</Typography>
+                <Typography>{moveData[0].size}</Typography>
+              </Box>
+
+              <Box display="flex" justifyContent="space-between">
+                <Typography color="text.secondary">Available Qty</Typography>
+                <Typography fontWeight={600} color="success.main">
+                  {moveData[0].availableQty}
+                </Typography>
+              </Box>
+
+              {/* Divider */}
+              <Box sx={{ borderTop: "1px solid #eee", my: 1 }} />
+
+              {/* Input */}
+              <TextField
+                label="Move Quantity"
+                type="number"
+                size="small"
+                value={moveData[0].moveQty}
+                onChange={(e) =>
+                  handleMoveQtyChange(e.target.value, moveData[0])
+                }
+                sx={{ width: 350 }}
+                inputProps={{
+                  min: 0,
+                  max: moveData[0].availableQty,
+                }}
+              />
+            </Stack>
+          </Box>
+        )}
+
+        {step === 2 && (
+          <Stack spacing={1}>
+            <Typography variant="h6">Confirm Movement</Typography>
+
+            {moveData.filter((item) => item.moveQty > 0).length === 0 ? (
+              <Typography>No items selected</Typography>
+            ) : (
+              moveData
+                .filter((item) => item.moveQty > 0)
+                .map((item) => (
+                  <Typography key={item.batchProductId}>
+                    {item.productName} → <b>{item.moveQty}</b>
+                  </Typography>
+                ))
+            )}
+          </Stack>
+        )}
+      </GlobalModal>
     </div>
   );
 };

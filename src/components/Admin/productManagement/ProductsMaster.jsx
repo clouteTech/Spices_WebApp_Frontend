@@ -25,6 +25,12 @@ import { useToast } from "../../../context/ToastContext";
 import GlobalModal from "../../../ui/GlobalModal";
 import { GlobalDeleteModal } from "../../../ui/GlobalModal";
 import Table from "./Table/Table";
+import { InputText } from "primereact/inputtext";
+import { IconField } from "primereact/iconfield";
+import { InputIcon } from "primereact/inputicon";
+import { FilterMatchMode } from "primereact/api";
+import { Button as PrimeButton } from "primereact/button";
+
 import {
   DndContext,
   closestCenter,
@@ -54,11 +60,11 @@ import {
 import { OverlayPanel } from "primereact/overlaypanel";
 
 import {
-  uploadProductImages,
-  getProductImages,
-  setPrimaryImage,
+  uploadProductImage,
+  getProductImage,
+  setProductDefault,
   deleteProductImage,
-} from "../../../services/imageService";
+} from "../../../services/productImageService";
 
 import { Card, CardContent, Divider } from "@mui/material";
 import { activateMasterEntity } from "../../../services/activate";
@@ -79,9 +85,12 @@ const DEFAULT_FORM = {
   organicOrNot: false,
   preservativeAdded: false,
   ownBrand: false,
+  dietType: false,
   brandName: "",
   ingredients: "",
   description: "",
+  howToUse: "",
+  benefits: "",
   productStatus: true,
   keywords: [],
 };
@@ -95,8 +104,6 @@ const ProductsMaster = () => {
   const [productTypeList, setProductTypeList] = useState([]);
   const [products, setProducts] = useState([]);
 
-  // productImages will be array of objects:
-  // { file: File | null, url: string (preview or server url), isDefault: boolean }
   const [productImages, setProductImages] = useState([]);
 
   const [form, setForm] = useState(DEFAULT_FORM);
@@ -114,6 +121,16 @@ const ProductsMaster = () => {
   // ===== ACTION MENU =====
   const actionRef = useRef(null);
   const [selectedRow, setSelectedRow] = useState(null);
+
+  const [globalFilter, setGlobalFilter] = useState("");
+  const [filters, setFilters] = useState({
+    global: { value: null, matchMode: FilterMatchMode.CONTAINS },
+  });
+
+  const BASE_URL = import.meta.env.VITE_API_URL;
+  const defaultImageId = productImages.find((img) => img.isDefault)?.id || "";
+
+  const [keywordInput, setKeywordInput] = useState("");
 
   const productId = editId || localStorage.getItem("activeProductId");
   const imagesEnabled = !!productId;
@@ -196,7 +213,10 @@ const ProductsMaster = () => {
           productType: row.productType,
           ingredients: row.ingredients,
           organicOrNot: row.organicOrNot,
+          dietType: row.dietType,
           quality: row.quality,
+          howToUse: row.howToUse,
+          benefits: row.benefits,
           productStatus: row.productStatus ? "Active" : "Inactive",
         })),
       );
@@ -207,7 +227,6 @@ const ProductsMaster = () => {
       setLoading(false);
     }
   }, [pagination.page, pagination.size]);
-
 
   const fetchCategoriesByType = async (type) => {
     if (!type) return setCategoryList([]);
@@ -234,16 +253,16 @@ const ProductsMaster = () => {
   }, [form.productType]);
 
   // cleanup object URLs on unmount
-  useEffect(() => {
-    return () => {
-      productImages.forEach((img) => {
-        if (img && img.file && img.url && img.url.startsWith("blob:")) {
-          URL.revokeObjectURL(img.url);
-        }
-      });
-    };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  // useEffect(() => {
+  //   return () => {
+  //     productImages.forEach((img) => {
+  //       if (img && img.file && img.url && img.url.startsWith("blob:")) {
+  //         URL.revokeObjectURL(img.url);
+  //       }
+  //     });
+  //   };
+  //   // eslint-disable-next-line react-hooks/exhaustive-deps
+  // }, []);
 
   const resetForm = () => {
     setForm(DEFAULT_FORM);
@@ -427,10 +446,14 @@ const ProductsMaster = () => {
         ingredients: data.ingredients,
         description: data.description,
         ownBrand: data.ownBrand,
+        dietType: data.dietType,
         brandName: data.brand || "",
+        benefits: data.benefits,
+        howToUse: data.howToUse,
         productType: data.productCategoryType,
         productCategoryId: data.productCategoryId,
         productCategoryName: data.productCategoryName,
+        keywords: Array.isArray(data.keywords) ? data.keywords : [],
       });
 
       // LOAD CATEGORY LIST FOR THIS TYPE and use returned list directly
@@ -464,9 +487,9 @@ const ProductsMaster = () => {
       }
 
       // LOAD IMAGES (use loadProductImages which we made safe)
-      await loadProductImages(productId);
+      await loadProductImages(data.productId);
 
-      setEditId(productId);
+      setEditId(data.productId);
       setOpen(true);
     } catch (err) {
       console.error(err);
@@ -511,66 +534,69 @@ const ProductsMaster = () => {
     }
   };
 
-  // Add uploaded files to productImages state with {file, url, isDefault}
-  // const handleProductImagesChange = (files) => {
-  //   const mappedFiles = files.map((file) => ({
-  //     id: generateId(),
-  //     file,
-  //     url: URL.createObjectURL(file),
-  //     isDefault: false,
-  //   }));
-
-  //   setProductImages((prev) => {
-  //     const updated = [...prev, ...mappedFiles];
-  //     if (!updated.some((i) => i.isDefault) && updated.length > 0) {
-  //       updated[0].isDefault = true;
-  //     }
-  //     return updated;
-  //   });
-  // };
-
   const loadProductImages = async (productId) => {
     try {
-      const res = await getProductImages(productId);
+      const res = await getProductImage(productId);
       const data = res?.data?.data || [];
 
-      const normalized = data.map((img) => {
-        const rawId = img.productImgId ?? img.id;
-
-        return {
-          id: rawId, // ❗ DO NOT force Number here
-          url: img.imageUrl?.startsWith("http")
+      const normalized = data.map((img) => ({
+        id: img.id,
+        url: img.imageUrl
+          ? img.imageUrl.startsWith("http")
             ? img.imageUrl
-            : `${BASE_URL}${img.imageUrl}`,
-          isDefault: Boolean(img.primaryImage),
-        };
-      });
+            : `${BASE_URL}${img.imageUrl}`
+          : img.thumbnailUrl
+            ? `${BASE_URL}${img.thumbnailUrl}`
+            : "",
+        isDefault: Boolean(img.primary),
+      }));
 
-      console.log("Loaded images:", normalized);
       setProductImages(normalized);
     } catch (err) {
-      console.error(err);
       showToast("Failed to load images", "error");
     }
   };
 
   const handleProductImagesChange = async (files) => {
-    if (!productId) {
-      showToast("Save product first", "warning");
-      return;
-    }
-
     const formData = new FormData();
-    files.forEach((f) => formData.append("files", f));
 
     try {
-      await uploadProductImages(productId, formData);
-      showToast("Images uploaded", "success");
+      for (const file of files) {
+        // Size check
+        if (file.size > 2 * 1024 * 1024) {
+          throw "Image must be less than 2MB";
+        }
 
-      // 🔁 ALWAYS reload from backend
+        // Dimension check
+        await new Promise((resolve, reject) => {
+          const img = new Image();
+          const objectUrl = URL.createObjectURL(file);
+          img.src = objectUrl;
+
+          img.onload = () => {
+            URL.revokeObjectURL(objectUrl);
+            console.log("Image resolution:", img.width, img.height);
+            if (img.width < 100 || img.height < 100) {
+              reject("Image must be at least 100x100");
+            } else {
+              resolve();
+            }
+          };
+
+          img.onerror = () => {
+            URL.revokeObjectURL(objectUrl);
+            reject("Invalid image");
+          };
+        });
+
+        formData.append("files", file);
+      }
+
+      await uploadProductImage(productId, formData);
+      showToast("Images uploaded", "success");
       await loadProductImages(productId);
     } catch (err) {
-      showToast("Upload failed", "error");
+      showToast(err, "error");
     }
   };
 
@@ -593,7 +619,7 @@ const ProductsMaster = () => {
       );
 
       // ✅ CALL BACKEND (DATA SYNC ONLY)
-      await setPrimaryImage(pid, iid);
+      await setProductDefault(pid, iid);
       showToast("Default image updated", "success");
     } catch (err) {
       showToast("Failed to set default image", "error");
@@ -630,88 +656,46 @@ const ProductsMaster = () => {
     }
   };
 
-  // const handleProductDetailsSave = async () => {
-  //   if (
-  //     !form.productName ||
-  //     !form.productType ||
-  //     !form.productCategoryId ||
-  //     !form.quality ||
-  //     form.organicOrNot === null ||
-  //     form.preservativeAdded === null ||
-  //     !form.ingredients ||
-  //     !form.description
-  //   ) {
-  //     showToast("Please fill all fields", "warning");
-  //     return;
-  //   }
-
-  //   try {
-  //     const payload = {
-  //       productCode: form.productCode,
-  //       productName: form.productName,
-  //       productType: form.productType,
-  //       productCategoryId: form.productCategoryId,
-  //       productCategoryName: form.productCategoryName,
-  //       quality: form.quality,
-  //       organicOrNot: form.organicOrNot,
-  //       preservativeAdded: form.preservativeAdded,
-  //       ownBrand: form.ownBrand,
-  //       brandName: form.brandName,
-  //       ingredients: form.ingredients,
-  //       description: form.description,
-  //       productStatus: form.productStatus,
-  //       keywords: form.keywords,
-  //     };
-
-  //     // let res;
-  //     // if (editId) {
-  //     //   res = await updateProduct({
-  //     //     ...payload,
-  //     //     productId:editId,
-  //     //   });
-  //     // } else {
-  //     //   res = await addProduct(payload);
-  //     // }
-
-  //     const res = await updateProduct(editId);
-
-  //     const ok = res?.status === 200 || res?.data?.status === 200;
-  //     if (ok) {
-  //       // robustly read returned id (depends on your backend response shape)
-  //       const newId =
-  //         res?.data?.data?.productId ??
-  //         res?.data?.productId ??
-  //         res?.data?.id ??
-  //         editId;
-
-  //       if (newId) {
-  //         setEditId(newId);
-  //         localStorage.setItem("activeProductId", String(newId));
-  //       }
-
-  //       showToast("Product Details Saved Successfully", "success");
-  //       fetchProducts();
-  //     } else {
-  //       showToast("Failed to save Product Details", "error");
-  //     }
-  //   } catch (err) {
-  //     console.error("Product Details Save Error:", err);
-  //     showToast("Failed to save Product Details", "error");
-  //   }
-  // };
-
   const handleProductDetailsSave = async () => {
     if (
-      !form.productName ||
+      !form.productName.trim() ||
       !form.productType ||
       !form.productCategoryId ||
-      !form.quality ||
+      !form.quality.trim() ||
       form.organicOrNot === null ||
       form.preservativeAdded === null ||
-      !form.ingredients ||
-      !form.description
+      !form.ingredients.trim() ||
+      !form.description.trim()
     ) {
       showToast("Please fill all fields", "warning");
+      return;
+    }
+
+    const exists = products.some(
+      (item) =>
+        item.productName.toLowerCase() ===
+          form.productName.trim().toLowerCase() &&
+        item.productCategoryName === form.productCategoryName,
+    );
+
+    if (!editId && exists) {
+      showToast("This Product already exists!", "warning");
+      return;
+    }
+
+    const namePattern = /^[A-Za-z\s]+$/;
+
+    if (!namePattern.test(form.productName.trim())) {
+      showToast("Only letters allowed in Product Name", "warning");
+      return;
+    }
+
+    const uniqueKeywords = new Set(
+      form.keywords.map((k) => k.trim().toLowerCase()),
+    );
+
+    if (uniqueKeywords.size !== form.keywords.length) {
+      showToast("Duplicate Keywords not allowed", "warning");
       return;
     }
 
@@ -719,17 +703,20 @@ const ProductsMaster = () => {
       const payload = {
         productId: editId || null, // 🔥 MUST be inside body
         productCode: form.productCode,
-        productName: form.productName,
+        productName: form.productName.trim(),
         productType: form.productType,
         productCategoryId: form.productCategoryId,
         productCategoryName: form.productCategoryName,
-        quality: form.quality,
+        quality: form.quality.trim(),
         organicOrNot: form.organicOrNot,
         preservativeAdded: form.preservativeAdded,
         ownBrand: form.ownBrand,
         brand: form.brandName,
-        ingredients: form.ingredients,
-        description: form.description,
+        howToUse: form.howToUse,
+        benefits: form.benefits,
+        dietType: form.dietType,
+        ingredients: form.ingredients.trim(),
+        description: form.description.trim(),
         productStatus: form.productStatus,
         keywords: form.keywords,
       };
@@ -752,115 +739,6 @@ const ProductsMaster = () => {
       showToast("Failed to save Product Details", "error");
     }
   };
-
-
-  // const handleProductImagesSave = async()=>{
-  //   try{
-  //     const formData = new FormData();
-  //     const existingImages = [];
-
-  //     productImages.forEach((img)=>{
-  //       if(!img) return;
-  //       if(img.file){
-  //         formData.append("newImages",img.file);
-  //         formData.append("newImagesIsDefault",img.isDefault?"true":"false");
-  //       }else{
-  //         existingImages.push({
-  //           url:img.url,
-  //           isDefault:!!img.isDefault,
-  //         })
-  //       }
-  //     });
-  //     formData.append("existingImages",JSON.stringify(existingImages));
-  //     formData.append("productId",editId);
-
-  //     const res =  await updateProduct(formData);
-
-  //     if(res?.status === 200 || res?.data?.status === 200){
-  //       toast.success("Product Images Saved Successfully");
-  //     }else{
-  //       toast.error("Failed to save images");
-  //     }
-  //   }catch(err){
-  //     console.error("Image Save Error:",err);
-  //     toast.error("Failed to save images");
-  //   }
-  // }
-
-  const defaultImageId =
-    productImages.find((img) => img.isDefault)?.id ??
-    productImages[0]?.id ??
-    "";
-
-  // const columns = [
-  //   { field: "serialNo", headerName: "S.No", width: 100, sortable: false },
-  //   { field: "productCode", headerName: "Product Code", minWidth: 150 },
-  //   { field: "productName", headerName: "Product Name", minWidth: 250 },
-  //   {
-  //     field: "productCategoryName",
-  //     headerName: "Category Name",
-  //     minWidth: 250,
-  //   },
-  //   { field: "ingredients", headerName: "Ingredients", minWidth: 200 },
-  //   {
-  //     field: "organicOrNot",
-  //     headerName: "Organic",
-  //     minWidth: 100,
-  //     renderCell: (params) => (params.value ? "Yes" : "No"),
-  //   },
-  //   {
-  //     field: "productStatus",
-  //     headerName: "Status",
-  //     minWidth: 150,
-  //     renderCell: (params) => (
-  //       <span
-  //         style={{
-  //           color: params.value ? "green" : "red",
-  //           fontWeight: "bold",
-  //         }}
-  //       >
-  //         {params.value ? "Active" : "Inactive"}
-  //       </span>
-  //     ),
-  //   },
-  //   {
-  //     field: "actions",
-  //     headerName: "Actions",
-  //     minWidth: 100,
-  //     renderCell: (params) => (
-  //       <>
-  //         <IconButton onClick={(e) => handleMenuOpen(e, params.row.id)}>
-  //           <MoreVertIcon />
-  //         </IconButton>
-  //         <Menu
-  //           anchorEl={anchorE1}
-  //           open={menuRowId === params.row.id}
-  //           onClose={handleMenuClose}
-  //         >
-  //           <MenuItem
-  //             onClick={() => {
-  //               handleMenuClose();
-  //               handleEditClick(params.row);
-  //             }}
-  //           >
-  //             <BorderColorTwoToneIcon />
-  //             Edit
-  //           </MenuItem>
-  //           <MenuItem
-  //             onClick={() => {
-  //               setDeleteId(params.row.id);
-  //               setOpenDelete(true);
-  //               handleMenuClose();
-  //             }}
-  //           >
-  //             <DeleteOutlineTwoToneIcon />
-  //             Delete
-  //           </MenuItem>
-  //         </Menu>
-  //       </>
-  //     ),
-  //   },
-  // ];
 
   const columns = [
     {
@@ -917,6 +795,46 @@ const ProductsMaster = () => {
     },
   ];
 
+  const header = (
+    <div className="flex justify-content-between align-items-center p-3">
+      {/* CLEAR BUTTON */}
+      <PrimeButton
+        icon="pi pi-filter-slash"
+        label="Clear"
+        outlined
+        size="small"
+        onClick={() => {
+          setFilters({
+            global: { value: null, matchMode: FilterMatchMode.CONTAINS },
+          });
+          setGlobalFilter("");
+        }}
+      />
+
+      {/* SEARCH INPUT */}
+      <IconField iconPosition="left" className="search-field">
+        <InputIcon className="pi pi-search" />
+        <InputText
+          value={globalFilter}
+          onChange={(e) => {
+            const value = e.target.value;
+
+            setFilters({
+              global: {
+                value,
+                matchMode: FilterMatchMode.CONTAINS,
+              },
+            });
+
+            setGlobalFilter(value);
+          }}
+          placeholder="Keyword Search"
+          className="p-inputtext-sm"
+        />
+      </IconField>
+    </div>
+  );
+
   function SortableImage({ img, index, handleRemove }) {
     const { attributes, listeners, setNodeRef, transform, transition } =
       useSortable({ id: img.id, animateLayoutChanges: () => false });
@@ -936,8 +854,13 @@ const ProductsMaster = () => {
       <Box ref={setNodeRef} style={style} {...attributes} {...listeners}>
         <img
           src={img.url}
-          style={{ width: "100%", height: "100%", objectFit: "cover" }}
+          style={{
+            width: "100%",
+            height: "100%",
+            objectFit: "cover",
+          }}
         />
+
         {/* DEFAULT BADGE */}
         {img.isDefault && (
           <Box
@@ -1022,6 +945,10 @@ const ProductsMaster = () => {
       <Table
         value={products}
         columns={columns}
+        filters={filters}
+        setFilters={setFilters}
+        header={header}
+        globalFilterFields={["productName", "productCode", "status"]}
         pagination={pagination}
         totalRecords={totalElements}
         loading={loading}
@@ -1090,7 +1017,6 @@ const ProductsMaster = () => {
           <Typography variant="h6" mb={2}>
             <strong>Product Details</strong>
           </Typography>
-
           <Divider sx={{ mb: 2 }} />
           <CardContent>
             <Stack spacing={2}>
@@ -1156,7 +1082,7 @@ const ProductsMaster = () => {
                   name="productName"
                   value={form.productName}
                   onChange={handleChange}
-                  sx={{ width: 350 }}
+                  sx={{ width: 270 }}
                 />
                 <TextField
                   label="Quality"
@@ -1214,28 +1140,52 @@ const ProductsMaster = () => {
                 </FormControl>
               </Stack>
 
-              <FormControl component="fieldset">
-                <FormLabel component="legend">
-                  <strong>Own Brand</strong>
-                </FormLabel>
-                <RadioGroup
-                  row
-                  name="ownBrand"
-                  value={form.ownBrand}
-                  onChange={handleChange}
-                >
-                  <FormControlLabel
-                    value={true}
-                    control={<Radio />}
-                    label="Yes"
-                  />
-                  <FormControlLabel
-                    value={false}
-                    control={<Radio />}
-                    label="No"
-                  />
-                </RadioGroup>
-              </FormControl>
+              <Stack direction="row" spacing={10}>
+                <FormControl component="fieldset">
+                  <FormLabel component="legend">
+                    <strong>Own Brand</strong>
+                  </FormLabel>
+                  <RadioGroup
+                    row
+                    name="ownBrand"
+                    value={form.ownBrand}
+                    onChange={handleChange}
+                  >
+                    <FormControlLabel
+                      value={true}
+                      control={<Radio />}
+                      label="Yes"
+                    />
+                    <FormControlLabel
+                      value={false}
+                      control={<Radio />}
+                      label="No"
+                    />
+                  </RadioGroup>
+                </FormControl>
+                <FormControl component="fieldset">
+                  <FormLabel component="legend">
+                    <strong>Diet Type</strong>
+                  </FormLabel>
+                  <RadioGroup
+                    row
+                    name="dietType"
+                    value={form.dietType}
+                    onChange={handleChange}
+                  >
+                    <FormControlLabel
+                      value={true}
+                      control={<Radio />}
+                      label="Veg"
+                    />
+                    <FormControlLabel
+                      value={false}
+                      control={<Radio />}
+                      label="Non Veg"
+                    />
+                  </RadioGroup>
+                </FormControl>
+              </Stack>
               {!form.ownBrand && (
                 <TextField
                   label="Brand Name"
@@ -1259,9 +1209,27 @@ const ProductsMaster = () => {
                 multiline
                 rows={3}
               />
+              <TextField
+                label="Usage Instructions"
+                name="howToUse"
+                value={form.howToUse}
+                onChange={handleChange}
+                fullWidth
+                multiline
+                rows={3}
+              />
+              <TextField
+                label="Benefits"
+                name="benefits"
+                value={form.benefits}
+                onChange={handleChange}
+                fullWidth
+                multiline
+                rows={2}
+              />
             </Stack>
 
-            {/* <Stack spacing={2}>
+            <Stack spacing={2}>
               <Box sx={{ mt: 3 }}>
                 <Box sx={{ display: "flex", gap: 2 }}>
                   <TextField
@@ -1314,7 +1282,7 @@ const ProductsMaster = () => {
                           setForm((prev) => ({
                             ...prev,
                             keywords: prev.keywords.filter(
-                              (_, i) => i !== index
+                              (_, i) => i !== index,
                             ),
                           }))
                         }
@@ -1325,7 +1293,7 @@ const ProductsMaster = () => {
                   ))}
                 </Box>
               </Box>
-            </Stack> */}
+            </Stack>
           </CardContent>
           <Stack direction="row" spacing={2} justifyContent="flex-end" mt={3}>
             <Button variant="outlined" onClick={resetForm}>

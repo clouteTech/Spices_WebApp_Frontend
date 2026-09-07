@@ -640,6 +640,11 @@ import {
   deleteSize,
 } from "../../../services/size";
 import { activateMasterEntity } from "../../../services/activate";
+import { FilterMatchMode } from "primereact/api";
+import { InputText } from "primereact/inputtext";
+import { IconField } from "primereact/iconfield";
+import { InputIcon } from "primereact/inputicon";
+import { Button as PrimeButton } from "primereact/button";
 
 const SizeForm = () => {
   const { showToast } = useToast();
@@ -653,6 +658,8 @@ const SizeForm = () => {
   });
   const [totalElements, setTotalElements] = useState(0);
   const [loading, setLoading] = useState(false);
+
+  const [errors, setErrors] = useState({});
 
   // ===== ACTION MENU =====
   const actionRef = useRef(null);
@@ -668,6 +675,12 @@ const SizeForm = () => {
   const [selectedId, setSelectedId] = useState(null);
   const [sizeType, setSizeType] = useState("");
   const [sizeValue, setSizeValue] = useState("");
+
+  // ===== SEARCH =====
+  const [globalFilter, setGlobalFilter] = useState("");
+  const [filters, setFilters] = useState({
+    global: { value: null, matchMode: FilterMatchMode.CONTAINS },
+  });
 
   // ===== FETCH LIST =====
   const fetchSizes = useCallback(async () => {
@@ -709,35 +722,165 @@ const SizeForm = () => {
   const handleEditClick = (row) => {
     setEditId(row.id);
     setSizeType(row.sizeType);
-    setSizeValue(row.size);
+    setSizeValue(String(row.size));
     setOpenAdd(true);
   };
 
   // ===== SAVE =====
+  // const handleSave = async () => {
+  //   let newErrors = {};
+
+  //   if (!sizeType.trim()) {
+  //     newErrors.sizeType = "Size Type is required";
+  //   }
+
+  //   if (!sizeValue.trim()) {
+  //     newErrors.sizeValue = "Size is required";
+  //   } else {
+  //     const numberPattern = /^[0-9]+$/;
+
+  //     if (!numberPattern.test(sizeValue.trim())) {
+  //       newErrors.sizeValue = "Enter valid number (50, 100)";
+  //     }
+  //   }
+
+  //   if (Object.keys(newErrors).length > 0) {
+  //     setErrors(newErrors);
+  //     return;
+  //   }
+
+  //   // ✅ clear errors
+  //   setErrors({});
+
+  //   const exists = sizes.some(
+  //     (item) =>
+  //       item.id !== editId && // ✅ ignore current row
+  //       item.sizeType.toLowerCase() === sizeType.trim().toLowerCase() &&
+  //       item.size.toLowerCase() === sizeValue.trim().toLowerCase(),
+  //   );
+
+  //   if (exists) {
+  //     showToast("This Size already exists!", "warning");
+  //     return;
+  //   }
+
+  //   try {
+  //     const payload = {
+  //       sizeType,
+  //       size: sizeValue,
+  //       ...(editId && { sizeId: editId }),
+  //     };
+
+  //     editId ? await updateSize(payload) : await addSizes(payload);
+
+  //     showToast(editId ? "Size Updated" : "Size Added", "success");
+  //     fetchSizes();
+  //     setOpenAdd(false);
+  //     setEditId(null);
+  //     setSizeType("");
+  //     setSizeValue("");
+  //   } catch {
+  //     showToast("Error while saving size", "error");
+  //   }
+  // };
+
   const handleSave = async () => {
-    if (!sizeType || !sizeValue) {
-      showToast("Please fill all fields", "warning");
+    console.log("Clicked Save");
+
+    let newErrors = {};
+
+    if (!sizeType.trim()) {
+      newErrors.sizeType = "Size Type is required";
+    }
+
+    if (!String(sizeValue).trim()) {
+      newErrors.sizeValue = "Size is required";
+    } else {
+      const numberPattern = /^[0-9]+$/;
+
+      if (!numberPattern.test(String(sizeValue).trim())) {
+        newErrors.sizeValue = "Enter valid number (50, 100)";
+      }
+    }
+
+    console.log("Validation Errors:", newErrors);
+
+    if (Object.keys(newErrors).length > 0) {
+      setErrors(newErrors);
+      return;
+    }
+
+    setErrors({});
+
+    const exists = sizes.some(
+      (item) =>
+        item.id !== editId &&
+        String(item.sizeType).toLowerCase() === sizeType.trim().toLowerCase() &&
+        String(item.size).toLowerCase() ===
+          String(sizeValue).trim().toLowerCase(),
+    );
+    console.log("Exists:", exists);
+
+    if (exists) {
+      showToast("This Size already exists!", "warning");
       return;
     }
 
     try {
+      console.log("Calling API...");
+
       const payload = {
         sizeType,
         size: sizeValue,
         ...(editId && { sizeId: editId }),
       };
 
+      console.log("Payload:", payload);
+
       editId ? await updateSize(payload) : await addSizes(payload);
 
+      console.log("API SUCCESS");
+
       showToast(editId ? "Size Updated" : "Size Added", "success");
+
       fetchSizes();
       setOpenAdd(false);
       setEditId(null);
       setSizeType("");
       setSizeValue("");
-    } catch {
+    } catch (err) {
+      console.error("API ERROR:", err);
       showToast("Error while saving size", "error");
     }
+  };
+
+  const handleChange = (field, value) => {
+    let error = "";
+    if (field === "sizeType") {
+      const textOnlyPattern = /^[A-Za-z\s]+$/;
+
+      if (!value.trim()) {
+        error = "SizeType is Required";
+      } else if (!textOnlyPattern.test(value)) {
+        error = "Only text allowed";
+      }
+    }
+    if (field === "sizeValue") {
+      const numberPattern = /^[0-9]+$/;
+
+      if (!value.trim()) {
+        error = "Size is required";
+      } else if (!numberPattern.test(value)) {
+        error = "Only numbers allowed";
+      }
+    }
+    if (field === "sizeType") setSizeType(value);
+    if (field === "sizeValue") setSizeValue(value);
+
+    setErrors((prev) => ({
+      ...prev,
+      [field]: error,
+    }));
   };
 
   // ===== DELETE =====
@@ -802,6 +945,44 @@ const SizeForm = () => {
     },
   ];
 
+  const header = (
+    <div className="flex justify-content-between align-items-center p-3">
+      <PrimeButton
+        icon="pi pi-filter-slash"
+        label="Clear"
+        outlined
+        size="small"
+        onClick={() => {
+          setFilters({
+            global: { value: null, matchMode: FilterMatchMode.CONTAINS },
+          });
+          setGlobalFilter("");
+        }}
+      />
+
+      <IconField iconPosition="left" className="search-field">
+        <InputIcon className="pi pi-search" />
+        <InputText
+          value={globalFilter}
+          onChange={(e) => {
+            const value = e.target.value;
+
+            setFilters({
+              global: {
+                value,
+                matchMode: FilterMatchMode.CONTAINS,
+              },
+            });
+
+            setGlobalFilter(value);
+          }}
+          placeholder="Keyword Search"
+          className="p-inputtext-sm"
+        />
+      </IconField>
+    </div>
+  );
+
   return (
     <Box sx={{ p: 4 }}>
       <Stack direction="row" justifyContent="space-between" mb={2}>
@@ -815,6 +996,7 @@ const SizeForm = () => {
             setEditId(null);
             setSizeType("");
             setSizeValue("");
+            setErrors({});
             setOpenAdd(true);
           }}
         >
@@ -825,6 +1007,9 @@ const SizeForm = () => {
       <Table
         value={sizes}
         columns={columns}
+        filters={filters}
+        header={header}
+        globalFilterFields={["sizeType", "size", "sizeStatus"]}
         pagination={pagination}
         totalRecords={totalElements}
         loading={loading}
@@ -881,11 +1066,28 @@ const SizeForm = () => {
       {/* ADD / EDIT MODAL */}
       <GlobalModal
         open={openAdd}
-        handleClose={() => setOpenAdd(false)}
+        handleClose={() => {
+          setOpenAdd(false);
+          setErrors({});
+        }}
         title={editId ? "Edit Size" : "Add Size"}
+        errors={errors}
+        onFieldChange={(field, value) => {
+          if (field === "sizeType") setSizeType(value);
+          if (field === "sizeValue") setSizeValue(value);
+
+          setErrors({ ...errors, [field]: "" });
+        }}
         actions={
           <>
-            <Button onClick={() => setOpenAdd(false)}>Cancel</Button>
+            <Button
+              onClick={() => {
+                setOpenAdd(false);
+                setErrors({});
+              }}
+            >
+              Cancel
+            </Button>
             <Button variant="contained" onClick={handleSave}>
               {editId ? "Update" : "Save"}
             </Button>
@@ -898,14 +1100,18 @@ const SizeForm = () => {
               label="SizeType"
               name="sizeType"
               value={sizeType}
-              onChange={(e) => setSizeType(e.target.value)}
+              onChange={(e) => handleChange("sizeType", e.target.value)}
+              error={!!errors?.sizeType}
+              helperText={errors?.sizeType}
               fullWidth
             />
             <TextField
               label="Size"
               name="size"
               value={sizeValue}
-              onChange={(e) => setSizeValue(e.target.value)}
+              onChange={(e) => handleChange("sizeValue", e.target.value)}
+              error={!!errors?.sizeValue}
+              helperText={errors?.sizeValue}
               fullWidth
             />
           </Stack>

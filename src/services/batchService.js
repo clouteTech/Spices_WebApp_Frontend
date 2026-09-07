@@ -1,4 +1,4 @@
-import instance from "./api";
+import instance from "./adminApi";
 
 export const getProductByShelfLife = (shelfLife) =>
   instance.post("/company/products/shelflife", null, {

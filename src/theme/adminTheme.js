@@ -19,10 +19,43 @@ const adminTheme = createTheme({
     },
   },
   typography: {
-    fontFamily: '"Poppins","Robonto","Helevetica","Arial",sans-serif',
-    h1: { fontSize: "4rem", fontWeight: 600 },
-    h2: { fontSize: "1.5rem", fontWeight: 600 },
-    body1: { fontSize: "0.95rem" },
+    fontFamily: '"Poppins", "Roboto", "Helvetica", "Arial", sans-serif',
+
+    h1: {
+      fontSize: "2rem",
+      fontWeight: 600,
+    },
+
+    h2: {
+      fontSize: "1.5rem",
+      fontWeight: 600,
+    },
+
+    h3: {
+      fontSize: "1.25rem",
+      fontWeight: 600,
+    },
+
+    h4: {
+      fontSize: "1.1rem",
+      fontWeight: 600,
+    },
+
+    body1: {
+      fontSize: "1rem",
+      fontWeight: 400,
+    },
+
+    body2: {
+      fontSize: "0.95rem",
+      color: "#666",
+    },
+
+    button: {
+      fontSize: "0.95rem",
+      textTransform: "none",
+      fontWeight: 500,
+    },
   },
   shape: {
     borderRadius: 10,

@@ -69,6 +69,8 @@ const GlobalModal = ({
   maxWidth = 800,
   fullWidth = true,
   disableBackdropClick = false,
+  errors = {},
+  onFieldChange,
 }) => {
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down("sm"));
@@ -135,20 +137,27 @@ const GlobalModal = ({
             mb: actions ? 3 : 0,
             flexGrow: 1,
             overflowY: "auto",
+            overflowX: "auto",
             mt: 1,
             px: 2,
             py: 1,
             "&.MuiTextField-root": { mb: 2 },
           }}
         >
-          {children}
+          {React.Children.map(children, (child) => {
+            if (!React.isValidElement(child)) return child;
+            return React.cloneElement(child, {
+              errors,
+              onFieldChange,
+            });
+          })}
         </Box>
 
         {/* Actions */}
         {actions && (
           <Stack direction="row" justifyContent="flex-end" spacing={2}>
             {React.Children.map(actions, (action) =>
-              React.cloneElement(action, { disabled: loading })
+              React.cloneElement(action, { disabled: loading }),
             )}
             {loading && <CircularProgress size={24} />}
           </Stack>
@@ -164,25 +173,26 @@ export const GlobalDeleteModal = ({
   open,
   onClose,
   onConfirm,
-  title="Delete Confirmation",
+  title = "Delete Confirmation",
   message = "Are You sure you want to delete this item?",
-})=>{
-  return(
+}) => {
+  return (
     <GlobalModal
-     open={open}
-     handleClose={onClose}
-     title={title}
-     actions={
-      <>
-      <Button variant="contained" onClick={onClose}>
-        Cancel
-      </Button>
-      <Button variant="contained" color="error" onClick={onConfirm}>
-        Delete
-      </Button>
-      </>
-     }>
+      open={open}
+      handleClose={onClose}
+      title={title}
+      actions={
+        <>
+          <Button variant="contained" onClick={onClose}>
+            Cancel
+          </Button>
+          <Button variant="contained" color="error" onClick={onConfirm}>
+            Delete
+          </Button>
+        </>
+      }
+    >
       <Typography>{message}</Typography>
-     </GlobalModal>
+    </GlobalModal>
   );
 };
